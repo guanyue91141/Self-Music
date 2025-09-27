@@ -261,7 +261,7 @@ export default function PlayClient() {
       coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
       songCount: 124,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
     }],
     moodIds: ['mood-1', 'mood-2'],
     coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&crop=face',
@@ -307,12 +307,16 @@ export default function PlayClient() {
         <PlayerLayout className="pt-16 lg:pt-0">
           {/* Left Section - Album Cover and Song Info */}
           <PlayerLeftSection>
-            {/* 移动设备上缩小专辑封面 */}
-            <AlbumCover song={displaySong} size="md" className="lg:hidden" />
-            <AlbumCover song={displaySong} size="lg" className="hidden lg:block" />
+            {/* 移动设备上使用环绕布局，桌面设备保持原有布局 */}
+            <div className="w-full lg:hidden">
+              <SongInfo song={displaySong} layout="around" />
+            </div>
             
-            <SongInfo song={displaySong} layout="around" className="lg:hidden" />
-            <SongInfo song={displaySong} layout="vertical" className="hidden lg:block" />
+            {/* 桌面设备保持原有布局 */}
+            <div className="hidden lg:block">
+              <AlbumCover song={displaySong} size="lg" />
+              <SongInfo song={displaySong} />
+            </div>
             
             {/* 移动设备上在进度条与图片之间显示歌词 */}
             <div className="w-full lg:hidden">
@@ -320,32 +324,10 @@ export default function PlayClient() {
                 lyrics={displayLyrics}
                 currentTime={currentTime}
                 onLyricClick={handleLyricClick}
-                compact={true}
+                compact={false}
                 className="h-32 max-h-32 overflow-hidden"
               />
             </div>
-            
-            <PlayerControls
-              isPlaying={isPlaying}
-              isShuffle={shuffleMode}
-              repeatMode={repeatMode}
-              isMuted={volume === 0}
-              isLiked={false}
-              volume={volume * 100}
-              currentTime={currentTime}
-              duration={duration}
-              onPlayPause={handlePlayPause}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              onShuffle={handleShuffle}
-              onRepeat={handleRepeat}
-              onMute={handleMute}
-              onLike={handleLike}
-              onVolumeChange={handleVolumeChange}
-              onSeek={handleSeek}
-              onFullscreen={handleFullscreenLyrics}
-              className="w-full max-w-md"
-            />
           </PlayerLeftSection>
 
           {/* Right Section - Lyrics (仅桌面端显示) */}
@@ -358,6 +340,56 @@ export default function PlayClient() {
             />
           </PlayerRightSection>
         </PlayerLayout>
+
+        {/* 固定底部控制组件 - 移动设备 */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-background/95 backdrop-blur-lg border-t border-border/50">
+          <PlayerControls
+            isPlaying={isPlaying}
+            isShuffle={shuffleMode}
+            repeatMode={repeatMode}
+            isMuted={volume === 0}
+            isLiked={false}
+            volume={volume * 100}
+            currentTime={currentTime}
+            duration={duration}
+            onPlayPause={handlePlayPause}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onShuffle={handleShuffle}
+            onRepeat={handleRepeat}
+            onMute={handleMute}
+            onLike={handleLike}
+            onVolumeChange={handleVolumeChange}
+            onSeek={handleSeek}
+            onFullscreen={handleFullscreenLyrics}
+            className="w-full p-4"
+          />
+        </div>
+
+        {/* 桌面设备控制组件 - 保持原有位置 */}
+        <div className="hidden lg:block">
+          <PlayerControls
+            isPlaying={isPlaying}
+            isShuffle={shuffleMode}
+            repeatMode={repeatMode}
+            isMuted={volume === 0}
+            isLiked={false}
+            volume={volume * 100}
+            currentTime={currentTime}
+            duration={duration}
+            onPlayPause={handlePlayPause}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onShuffle={handleShuffle}
+            onRepeat={handleRepeat}
+            onMute={handleMute}
+            onLike={handleLike}
+            onVolumeChange={handleVolumeChange}
+            onSeek={handleSeek}
+            onFullscreen={handleFullscreenLyrics}
+            className="w-full max-w-md mx-auto"
+          />
+        </div>
       </div>
 
       {/* Playlist Panel */}
