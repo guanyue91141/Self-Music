@@ -314,7 +314,7 @@ def init_db():
     
     # Update or Insert default admin user based on config
     admin_config = config.get('admin', {})
-    admin_username = admin_config.get('username', 'admin')
+    admin_username = admin_config.get('username', 'xbxb')
     admin_password_plain = admin_config.get('password') # Can be None
 
     if admin_username and admin_password_plain:
@@ -341,11 +341,11 @@ def init_db():
         user_exists = cursor.fetchone()
         if not user_exists:
             admin_id = str(uuid.uuid4())
-            admin_password = hashlib.sha256("admin123".encode()).hexdigest()
+            admin_password = hashlib.sha256("xbxbxb".encode()).hexdigest()
             conn.execute('''
                 INSERT OR IGNORE INTO users (id, username, password, role, createdAt)
                 VALUES (?, ?, ?, ?, ?)
-            ''', (admin_id, "admin", admin_password, "admin", datetime.now().isoformat()))
+            ''', (admin_id, "xbxb", admin_password, "admin", datetime.now().isoformat()))
     
     # Migrate existing song-artist relationships
     try:
