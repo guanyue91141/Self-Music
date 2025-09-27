@@ -14,5 +14,8 @@ COPY . .
 # 暴露端口
 EXPOSE 8000
 
+# 创建上传目录
+RUN mkdir -p uploads
+
 # 运行 uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
