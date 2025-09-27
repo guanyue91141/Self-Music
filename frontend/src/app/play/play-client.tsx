@@ -311,7 +311,8 @@ export default function PlayClient() {
             <AlbumCover song={displaySong} size="md" className="lg:hidden" />
             <AlbumCover song={displaySong} size="lg" className="hidden lg:block" />
             
-            <SongInfo song={displaySong} />
+            <SongInfo song={displaySong} layout="around" className="lg:hidden" />
+            <SongInfo song={displaySong} layout="vertical" className="hidden lg:block" />
             
             {/* 移动设备上在进度条与图片之间显示歌词 */}
             <div className="w-full lg:hidden">

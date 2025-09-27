@@ -159,7 +159,7 @@ export function AlbumCover({ song, className, size = 'lg' }: AlbumCoverProps) {
 interface SongInfoProps {
   song: Song;
   className?: string;
-  layout?: 'vertical' | 'horizontal';
+  layout?: 'vertical' | 'horizontal' | 'around';
 }
 
 export function SongInfo({ song, className, layout = 'vertical' }: SongInfoProps) {
@@ -196,6 +196,67 @@ export function SongInfo({ song, className, layout = 'vertical' }: SongInfoProps
     );
   }
 
+  // 新增：围绕专辑封面的布局
+  if (layout === 'around') {
+    return (
+      <motion.div 
+        className={cn("flex items-center justify-center space-x-6 lg:space-x-8", className)}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        {/* 左侧信息：歌曲名和作者 */}
+        <div className="flex-1 text-right space-y-2 lg:space-y-3">
+          <motion.h2 
+            className="text-lg lg:text-xl font-bold text-foreground leading-tight"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {song.title}
+          </motion.h2>
+          
+          <motion.p 
+            className="text-sm lg:text-base text-muted-foreground"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.35 }}
+            title={getAllArtistNames(song)}
+          >
+            {getAllArtistNames(song)}
+          </motion.p>
+        </div>
+
+        {/* 中间：专辑封面 */}
+        <div className="flex-shrink-0">
+          <AlbumCover song={song} size="md" />
+        </div>
+
+        {/* 右侧信息：专辑和时长 */}
+        <div className="flex-1 text-left space-y-2 lg:space-y-3">
+          <motion.p 
+            className="text-sm lg:text-base text-muted-foreground/80"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            专辑：{song.album?.title || '未知专辑'}
+          </motion.p>
+          
+          <motion.p 
+            className="text-sm lg:text-base text-muted-foreground/60"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.45 }}
+          >
+            时长：{formatDuration(song.duration)}
+          </motion.p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // 原有的垂直布局（保持向后兼容）
   return (
     <motion.div 
       className={cn("text-center space-y-4", className)}
