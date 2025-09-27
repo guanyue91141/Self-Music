@@ -148,8 +148,34 @@ export function AudioManager() {
     };
 
     const handleError = (error: Event) => {
+      const audioElement = error.target as HTMLAudioElement;
       console.error('Audio error:', error);
+      console.error('Audio error code:', audioElement?.error?.code);
+      console.error('Audio error message:', audioElement?.error?.message);
       console.error('Audio source:', audio.src);
+      
+      // 根据错误代码提供更具体的错误信息
+      if (audioElement?.error) {
+        let errorMessage = '';
+        switch (audioElement.error.code) {
+          case 1: // MEDIA_ERR_ABORTED
+            errorMessage = '音频加载被中止';
+            break;
+          case 2: // MEDIA_ERR_NETWORK
+            errorMessage = '网络错误导致音频加载失败';
+            break;
+          case 3: // MEDIA_ERR_DECODE
+            errorMessage = '音频文件解码失败';
+            break;
+          case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
+            errorMessage = '不支持的音频格式或源';
+            break;
+          default:
+            errorMessage = `未知错误 (${audioElement.error.code})`;
+        }
+        console.error('Audio error description:', errorMessage);
+      }
+      
       pause();
     };
 
@@ -193,9 +219,9 @@ export function AudioManager() {
       hasRecordedPlay.current.clear();
     }
     
-    // 使用提供的audioUrl或fileUrl，或构建默认URL
-    const audioUrl = currentSong.audioUrl || 
-                    `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/songs/${currentSong.id}/stream`.replace('/api/api/', '/api/');
+    // 始终使用流式传输端点以确保正确的认证和文件处理
+    // 即使currentSong.audioUrl存在，我们也使用流式传输端点
+    const audioUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/songs/${currentSong.id}/stream`.replace('/api/api/', '/api/');
     
     console.log('Loading new song:', currentSong.title, 'URL:', audioUrl);
     

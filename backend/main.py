@@ -31,6 +31,9 @@ except FileNotFoundError:
 app = FastAPI(title="Self-Music API", version="1.0.0")
 security = HTTPBearer()
 
+# Mount the uploads directory to serve uploaded files
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 SECRET_KEY = config.get('jwt_secret', "your-secret-key-change-this-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 12
@@ -1206,10 +1209,16 @@ async def upload_file(file: UploadFile = File(...), username: str = Depends(veri
     # Create uploads directory if it doesn't exist
     os.makedirs("uploads", exist_ok=True)
     
-    # Generate unique filename
-    file_id = str(uuid.uuid4())
+    # Preserve original filename but add timestamp to avoid conflicts
+    original_name = os.path.splitext(file.filename)[0]
     file_extension = os.path.splitext(file.filename)[1]
-    filename = f"{file_id}{file_extension}"
+    
+    # Remove special characters that might be problematic in filenames
+    safe_name = "".join(c for c in original_name if c.isalnum() or c in "._- ")
+    
+    # Add timestamp to make unique
+    timestamp = int(datetime.now().timestamp() * 1000)  # milliseconds
+    filename = f"{safe_name}_{timestamp}{file_extension}"
     file_path = f"uploads/{filename}"
     
     # Save file
@@ -1217,6 +1226,36 @@ async def upload_file(file: UploadFile = File(...), username: str = Depends(veri
         shutil.copyfileobj(file.file, buffer)
     
     return {"success": True, "data": {"filename": filename, "url": f"/uploads/{filename}"}}
+
+# Get list of uploaded files
+@app.get("/api/admin/uploaded-files")
+async def get_uploaded_files(username: str = Depends(verify_token)):
+    uploads_dir = "uploads"
+    
+    # Check if uploads directory exists
+    if not os.path.exists(uploads_dir):
+        return {"success": True, "data": []}
+    
+    # Get all files in uploads directory
+    files = []
+    for filename in os.listdir(uploads_dir):
+        file_path = os.path.join(uploads_dir, filename)
+        if os.path.isfile(file_path):
+            # Get file stats to get creation time and size
+            stat = os.stat(file_path)
+            file_info = {
+                "name": filename,
+                "url": f"/uploads/{filename}",
+                "size": stat.st_size,
+                "created_at": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat()
+            }
+            files.append(file_info)
+    
+    # Sort files by creation time (newest first)
+    files.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    return {"success": True, "data": files}
 
 # Import endpoints
 @app.post("/api/admin/import/check-exists")

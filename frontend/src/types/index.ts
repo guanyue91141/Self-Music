@@ -278,3 +278,11 @@ export interface ImportBatchResult {
   reason?: string;
   localId?: string; // ID in local database if imported
 }
+
+export interface UploadedFile {
+  name: string;
+  url: string;
+  size: number;
+  created_at: string;
+  modified_at: string;
+}

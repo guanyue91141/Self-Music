@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, RedirectResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any, Union
 import sqlite3
@@ -632,25 +632,52 @@ async def stream_song(song_id: str):
     if not row or not row[0]:
         raise HTTPException(status_code=404, detail="Audio file not found")
     
-    audio_path = row[0]
+    audio_url = row[0]
+    
+    # If the audioUrl is a path starting with /uploads/, convert it to a file path
+    if audio_url.startswith('/uploads/'):
+        # Convert URL path to actual file path
+        audio_path = audio_url[1:]  # Remove leading slash
+    else:
+        # If it's already a relative file path, use it as is
+        audio_path = audio_url
+    
     if not os.path.exists(audio_path):
         raise HTTPException(status_code=404, detail="Audio file not found on disk")
     
+    # Get file stats to set Content-Length header
+    try:
+        file_stat = os.stat(audio_path)
+        file_size = file_stat.st_size
+    except OSError:
+        raise HTTPException(status_code=500, detail="Could not access audio file")
+    
     def file_generator():
-        with open(audio_path, "rb") as audio_file:
-            while True:
-                chunk = audio_file.read(8192)
-                if not chunk:
-                    break
-                yield chunk
+        try:
+            with open(audio_path, "rb") as audio_file:
+                # Read and yield the entire file in chunks
+                while True:
+                    chunk = audio_file.read(65536)  # Use larger chunks for better performance
+                    if not chunk:
+                        break
+                    yield chunk
+        except Exception as e:
+            print(f"Error reading file {audio_path}: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error reading audio file: {str(e)}")
     
     media_type = mimetypes.guess_type(audio_path)[0] or "audio/mpeg"
     
-    return StreamingResponse(
+    response = StreamingResponse(
         file_generator(),
-        media_type=media_type,
-        headers={"Accept-Ranges": "bytes"}
+        media_type=media_type
     )
+    
+    # Set headers after creating the response
+    response.headers["Accept-Ranges"] = "bytes"
+    response.headers["Content-Length"] = str(file_size)
+    response.headers["Cache-Control"] = "public, max-age=3600"  # Cache for 1 hour
+    
+    return response
 
 @router.get("/api/songs/{song_id}/similar")
 async def get_similar_songs(song_id: str, limit: int = Query(10, ge=1, le=50)):

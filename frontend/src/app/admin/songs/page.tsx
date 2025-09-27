@@ -27,6 +27,7 @@ import {
   MoreHorizontal,
   Info
 } from 'lucide-react';
+import { AudioFileSelector } from '@/components/audio-file-selector';
 import { Song, Artist, Album, Mood } from '@/types';
 import { formatArtistNames, getAllArtistNames } from '@/types';
 import {
@@ -405,12 +406,19 @@ export default function SongsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="audioUrl">音频文件URL</Label>
+                    <Label htmlFor="audioUrl">音频文件</Label>
                     <Input
                       id="audioUrl"
                       value={formData.audioUrl}
                       onChange={(e) => setFormData({ ...formData, audioUrl: e.target.value })}
-                      placeholder="音频文件URL"
+                      placeholder="或输入音频文件URL"
+                      className="hidden" // 隐藏原始输入框，但保留以便手动输入
+                    />
+                    <AudioFileSelector
+                      value={formData.audioUrl}
+                      onChange={(url) => setFormData({ ...formData, audioUrl: url })}
+                      label="选择音频文件"
+                      placeholder="从已上传文件中选择..."
                     />
                   </div>
                   

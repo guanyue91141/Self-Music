@@ -369,6 +369,19 @@ class AdminAPI {
     return response.json();
   }
 
+  // Get list of uploaded files
+  async getUploadedFiles(): Promise<AdminApiResponse<{ name: string; url: string; size: number; created_at: string; modified_at: string }[]>> {
+    const response = await fetch(`${API_BASE}/admin/uploaded-files`, {
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch uploaded files');
+    }
+
+    return response.json();
+  }
+
   // Import related methods
   async checkSongExists(songName: string, artistName: string, albumName?: string): Promise<AdminApiResponse<{ id: string; title: string; artistName: string }> & { exists: boolean }> {
     const response = await fetch(`${API_BASE}/admin/import/check-exists`, {

@@ -18,7 +18,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Download
+  Download,
+  Upload
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -55,6 +56,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     { icon: Download, label: '一键导入', href: '/admin/import' },
+    { icon: Upload, label: '文件上传', href: '/admin/upload' },
     { icon: Users, label: '艺术家', href: '/admin/artists' },
     { icon: Album, label: '专辑', href: '/admin/albums' },
     { icon: Music, label: '歌曲', href: '/admin/songs' },
