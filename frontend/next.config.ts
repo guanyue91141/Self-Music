@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // 允许的开发环境跨域请求
+  allowedDevOrigins: [
+    '118.26.38.42', // 添加警告中提到的IP地址
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+  ],
   // Turbopack配置 (修复deprecated警告)
   turbopack: {
     rules: {

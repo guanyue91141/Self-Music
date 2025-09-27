@@ -10,7 +10,7 @@ import { Sidebar } from '@/components/sidebar';
 import { PlayerLayout, PlayerLeftSection, PlayerRightSection } from '@/components/player-layout';
 import { AlbumCover, SongInfo } from '@/components/song-info';
 import { PlayerControls } from '@/components/player-controls';
-import { LyricsCard } from '@/components/lyrics-display';
+import { LyricsCard, LyricsDisplay } from '@/components/lyrics-display';
 import { FullscreenLyrics } from '@/components/fullscreen-lyrics';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AmbientGlow } from '@/components/ambient-glow';
@@ -247,7 +247,7 @@ export default function PlayClient() {
       genre: '华语流行',
       description: '周杰伦第六张录音室专辑',
       createdAt: '2005-11-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
     },
     artistId: 'artist-1',
     albumId: 'album-1',
@@ -307,8 +307,23 @@ export default function PlayClient() {
         <PlayerLayout className="pt-16 lg:pt-0">
           {/* Left Section - Album Cover and Song Info */}
           <PlayerLeftSection>
-            <AlbumCover song={displaySong} />
+            {/* 移动设备上缩小专辑封面 */}
+            <AlbumCover song={displaySong} size="md" className="lg:hidden" />
+            <AlbumCover song={displaySong} size="lg" className="hidden lg:block" />
+            
             <SongInfo song={displaySong} />
+            
+            {/* 移动设备上在进度条与图片之间显示歌词 */}
+            <div className="w-full lg:hidden">
+              <LyricsDisplay
+                lyrics={displayLyrics}
+                currentTime={currentTime}
+                onLyricClick={handleLyricClick}
+                compact={true}
+                className="h-32 max-h-32 overflow-hidden"
+              />
+            </div>
+            
             <PlayerControls
               isPlaying={isPlaying}
               isShuffle={shuffleMode}
@@ -332,8 +347,8 @@ export default function PlayClient() {
             />
           </PlayerLeftSection>
 
-          {/* Right Section - Lyrics */}
-          <PlayerRightSection>
+          {/* Right Section - Lyrics (仅桌面端显示) */}
+          <PlayerRightSection className="hidden lg:flex">
             <LyricsCard
               lyrics={displayLyrics}
               currentTime={currentTime}

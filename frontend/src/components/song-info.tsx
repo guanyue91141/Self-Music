@@ -25,8 +25,8 @@ export function AlbumCover({ song, className, size = 'lg' }: AlbumCoverProps) {
 
   const sizeClasses = {
     sm: 'h-16 w-16',
-    md: 'h-32 w-32',
-    lg: 'h-64 w-64 lg:h-80 lg:w-80',
+    md: 'h-32 w-32 md:h-40 md:w-40', // 移动设备上更小，中等屏幕稍大
+    lg: 'h-48 w-48 md:h-64 md:w-64 lg:h-80 lg:w-80', // 移动设备中等大小，桌面设备大
   };
 
   // Extract colors when cover image changes
@@ -54,7 +54,7 @@ export function AlbumCover({ song, className, size = 'lg' }: AlbumCoverProps) {
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-      className={cn("relative group", className)}
+      className={cn("relative group", sizeClasses[size], className)}
       style={cssVars}
     >
       {/* Enhanced Glow Effects */}
