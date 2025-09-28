@@ -329,7 +329,7 @@ export default function PlayClient() {
                 currentTime={currentTime}
                 onLyricClick={handleLyricClick}
                 compact={false}
-                className="h-32 max-h-32 overflow-hidden"
+                className="h-64 max-h-64 overflow-hidden"
               />
             </div>
           </PlayerLeftSection>
