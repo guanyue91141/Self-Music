@@ -1,6 +1,9 @@
 import { LoginRequest, LoginResponse, AdminApiResponse, Artist, Album, Song, Mood, Playlist, ImportBatchRequest, ImportBatchResponse } from '@/types';
 
-const API_BASE = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:8000/api';
+// 修复API_BASE配置，确保生产环境下有正确的回退值
+const API_BASE = process.env.NODE_ENV === 'production' 
+  ? (process.env.NEXT_PUBLIC_API_URL || '/api') 
+  : 'http://localhost:8000/api';
 
 class AdminAPI {
   private token: string | null = null;
