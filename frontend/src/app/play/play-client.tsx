@@ -59,6 +59,7 @@ export default function PlayClient() {
   } = usePlayerStore();
 
   const [isFullscreenLyrics, setIsFullscreenLyrics] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const searchParams = useSearchParams();
   const handledParamsRef = useRef(false);
 
@@ -177,7 +178,10 @@ export default function PlayClient() {
   const handleShuffle = () => toggleShuffle();
   const handleRepeat = () => toggleRepeat();
   const handleMute = () => setVolume(volume === 0 ? 0.75 : 0);
-  const handleLike = () => console.log('Like song:', currentSong?.title);
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    console.log('Like song:', currentSong?.title, 'New state:', !isLiked);
+  };
   const handleVolumeChange = (value: number[]) => setVolume(value[0] / 100);
   const handleSeek = (value: number[]) => {
     const newTime = value[0];
@@ -348,7 +352,7 @@ export default function PlayClient() {
             isShuffle={shuffleMode}
             repeatMode={repeatMode}
             isMuted={volume === 0}
-            isLiked={false}
+            isLiked={isLiked}
             volume={volume * 100}
             currentTime={currentTime}
             duration={duration}
@@ -373,7 +377,7 @@ export default function PlayClient() {
             isShuffle={shuffleMode}
             repeatMode={repeatMode}
             isMuted={volume === 0}
-            isLiked={false}
+            isLiked={isLiked}
             volume={volume * 100}
             currentTime={currentTime}
             duration={duration}
