@@ -7,7 +7,7 @@
 const DEV_API_BASE = 'http://localhost:8000/api';
 
 // 生产环境配置
-const PROD_API_BASE = 'https://xg.guanyue.fun/api';
+const PROD_API_BASE = 'https://music.guanyue.fun/api';
 
 // 根据环境自动选择API基础URL
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
