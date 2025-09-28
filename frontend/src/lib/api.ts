@@ -10,8 +10,8 @@ import type {
   RecommendationParams 
 } from '@/types';
 import { mockApi } from './mock-api';
+import { API_BASE_URL } from './base_url_config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 const USE_MOCK_API = false;
 
 // Real API Client Configuration

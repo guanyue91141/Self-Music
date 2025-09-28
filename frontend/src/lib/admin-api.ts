@@ -1,9 +1,8 @@
 import { LoginRequest, LoginResponse, AdminApiResponse, Artist, Album, Song, Mood, Playlist, ImportBatchRequest, ImportBatchResponse } from '@/types';
+import { API_BASE_URL } from './base_url_config';
 
-// 修复API_BASE配置，确保生产环境下有正确的回退值
-const API_BASE = process.env.NODE_ENV === 'production' 
-  ? (process.env.NEXT_PUBLIC_API_URL || '/api') 
-  : 'http://localhost:8000/api';
+// 使用统一的API配置
+const API_BASE = API_BASE_URL;
 
 class AdminAPI {
   private token: string | null = null;
