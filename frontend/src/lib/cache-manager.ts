@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '@/lib/base_url_config';
+
 /**
  * Cache Manager - Interface for interacting with Service Worker cache
  */
@@ -158,7 +160,7 @@ export class CacheManager {
         await this.cacheAudio(song.audioUrl);
       } else {
         // Use default stream URL pattern
-        await this.cacheAudio(`/api/songs/${song.id}/stream`);
+        await this.cacheAudio(`${API_BASE_URL}/songs/${song.id}/stream`);
       }
 
       // Cache cover image if available

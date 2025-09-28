@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbopack",
-    "build": "rd /s /q .next 2>nul & next build",
+    "build": "next build",
     "start": "next start",
-    "build:start": "rd /s /q .next 2>nul & next build && next start",
+    "build:start": "next build && next start",
     "lint": "next lint"
   },
   "dependencies": {

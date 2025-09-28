@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Play, Plus, Trash2, Shuffle } from 'lucide-react';
 import { Song } from '@/types';
+import { API_BASE_URL } from '@/lib/base_url_config';
 
 // 测试用的模拟歌曲数据
 const mockSongs: Song[] = [
@@ -62,7 +63,7 @@ const mockSongs: Song[] = [
     }],
     moodIds: ['mood-1', 'mood-2'],
     coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&crop=face',
-    audioUrl: `/api/songs/1/stream`,
+    audioUrl: `${API_BASE_URL}/songs/1/stream`,
     playCount: 1000,
     liked: false,
     createdAt: '2023-01-01T00:00:00.000Z',

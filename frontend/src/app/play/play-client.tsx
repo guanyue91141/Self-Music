@@ -17,6 +17,7 @@ import { AmbientGlow } from '@/components/ambient-glow';
 import { api } from '@/lib/api';
 import { PlaylistPanel } from '@/components/playlist-panel';
 import { isModernBrowser } from '@/lib/utils';
+import { API_BASE_URL } from '@/lib/base_url_config';
 
 export default function PlayClient() {
   const [isModern, setIsModern] = useState(true);
@@ -269,7 +270,7 @@ export default function PlayClient() {
     }],
     moodIds: ['mood-1', 'mood-2'],
     coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop&crop=face',
-    audioUrl: `/api/songs/stream`,
+    audioUrl: `${API_BASE_URL}/songs/stream`,
     playCount: 1000,
     liked: false,
     createdAt: '2023-01-01T00:00:00.000Z',

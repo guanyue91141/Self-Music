@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { usePlayerStore } from '@/lib/store';
 import { useSongsStore } from '@/lib/data-stores';  // 导入歌曲存储以记录播放量
 import { cacheManager } from '@/lib/cache-manager';
+import { API_BASE_URL } from '@/lib/base_url_config';
 
 export function AudioManager() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -221,7 +222,7 @@ export function AudioManager() {
     
     // 始终使用流式传输端点以确保正确的认证和文件处理
     // 即使currentSong.audioUrl存在，我们也使用流式传输端点
-    const audioUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/songs/${currentSong.id}/stream`.replace('/api/api/', '/api/');
+    const audioUrl = `${API_BASE_URL}/songs/${currentSong.id}/stream`;
     
     console.log('Loading new song:', currentSong.title, 'URL:', audioUrl);
     
