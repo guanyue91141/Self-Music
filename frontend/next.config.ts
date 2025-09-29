@@ -30,6 +30,23 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'p4.music.126.net', // 网易云音乐图片域名
       },
+      // 兼容部分接口返回 http 协议的图片链接
+      {
+        protocol: 'http',
+        hostname: 'p1.music.126.net', // 网易云音乐图片域名（http）
+      },
+      {
+        protocol: 'http',
+        hostname: 'p2.music.126.net', // 网易云音乐图片域名（http）
+      },
+      {
+        protocol: 'http',
+        hostname: 'p3.music.126.net', // 网易云音乐图片域名（http）
+      },
+      {
+        protocol: 'http',
+        hostname: 'p4.music.126.net', // 网易云音乐图片域名（http）
+      },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com', // 示例图片域名
