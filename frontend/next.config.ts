@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  // 移除 standalone 输出以解决 Windows 构建问题
+  // output: 'standalone',
   // 允许的开发环境跨域请求
   allowedDevOrigins: [
     '118.26.38.42',
@@ -11,15 +12,6 @@ const nextConfig: NextConfig = {
     'xg.guanyue.fun',
     'music.guanyue.fun'
   ],
-  // Turbopack配置 (修复deprecated警告)
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-  },
   // 开发模式配置
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
