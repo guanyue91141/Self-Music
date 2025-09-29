@@ -40,11 +40,11 @@ export function Sidebar({ className }: SidebarProps) {
   
   const pathname = usePathname();
   const menuItems: MenuItem[] = [
-    { icon: Play, label: '播放器', href: '/play' },
-    { icon: Library, label: '所有歌曲', href: '/songs' },
-    { icon: List, label: '热门歌单', href: '/playlists' },
-    { icon: Users, label: '热门艺术家', href: '/artists' },
-    { icon: Smile, label: '心情音乐', href: '/moods' },
+    { icon: Play, label: '播放器 Player', href: '/play' },
+    { icon: Library, label: '所有歌曲 All Songs', href: '/songs' },
+    { icon: List, label: '热门歌单 Popular Playlists', href: '/playlists' },
+    { icon: Users, label: '热门艺术家 Popular Artists', href: '/artists' },
+    { icon: Smile, label: '心情音乐 Mood Music', href: '/moods' },
   ];
 
   useEffect(() => {
@@ -187,7 +187,7 @@ export function Sidebar({ className }: SidebarProps) {
             
             {!isCollapsed && (
               <div className="text-xs text-muted-foreground text-center">
-                © 2024 Self-Music
+                © 2025 BY Moonlight Gateway
               </div>
             )}
           </div>
