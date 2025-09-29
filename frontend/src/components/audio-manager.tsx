@@ -116,13 +116,6 @@ export function AudioManager() {
     const handlePlay = () => {
       console.log('Audio play event');
       
-      // 记录播放量（仅为真实歌曲，且每首歌曲只记录一次）
-      if (currentSong && currentSong.id !== 'demo-song-1' && !hasRecordedPlay.current.has(currentSong.id)) {
-        console.log('Recording play for song:', currentSong.title);
-        recordPlay(currentSong.id);
-        hasRecordedPlay.current.add(currentSong.id);
-      }
-      
       // 开始定期更新时间
       const updateTime = () => {
         if (!audio.paused && !audio.ended) {
@@ -131,6 +124,16 @@ export function AudioManager() {
         }
       };
       timeUpdateRef.current = requestAnimationFrame(updateTime);
+      
+      // 记录播放量（仅为真实歌曲，且每首歌曲只记录一次）
+      if (currentSong && currentSong.id !== 'demo-song-1' && !hasRecordedPlay.current.has(currentSong.id)) {
+        console.log('Recording play for song:', currentSong.title);
+        // 不等待 recordPlay 的结果，让它在后台执行，确保不影响播放
+        recordPlay(currentSong.id).catch(error => {
+          console.error('Failed to record play:', error);
+        });
+        hasRecordedPlay.current.add(currentSong.id);
+      }
     };
 
     const handlePause = () => {
@@ -274,6 +277,29 @@ export function AudioManager() {
 
   }, [currentSong, setDuration, pause]);
 
+  // 监听音频加载完成事件，在音频准备好后根据播放状态决定是否自动播放
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+
+    const handleCanPlay = () => {
+      console.log('Audio can play, current isPlaying state:', isPlaying);
+      // 如果当前应该播放且音频已准备好，则尝试播放
+      if (isPlaying) {
+        audio.play().catch((error) => {
+          console.error('Auto-play error after canplay:', error);
+          console.warn('Auto-play failed, possibly due to browser autoplay policy');
+        });
+      }
+    };
+
+    audio.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      audio.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [currentSong, isPlaying]);
+
   // 处理播放/暂停
   useEffect(() => {
     const audio = audioRef.current;
@@ -281,12 +307,38 @@ export function AudioManager() {
     
     if (isPlaying && currentSong) {
       console.log('Attempting to play:', currentSong.title);
-      audio.play().catch((error) => {
-        console.error('Play error:', error);
-        console.error('Audio ready state:', audio.readyState);
-        console.error('Audio src:', audio.src);
-        pause();
-      });
+      
+      // 检查音频是否已经准备好
+      if (audio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+        audio.play().catch((error) => {
+          console.error('Play error:', error);
+          console.error('Audio ready state:', audio.readyState);
+          console.error('Audio src:', audio.src);
+          console.warn('Playback failed, possibly due to browser autoplay policy');
+        });
+      } else {
+        // 如果还没准备好，等待 canplay 事件
+        const handleCanPlay = () => {
+          audio.play().catch((error) => {
+            console.error('Play error after canplay:', error);
+            console.warn('Playback failed, possibly due to browser autoplay policy');
+          });
+          audio.removeEventListener('canplay', handleCanPlay);
+        };
+        
+        audio.addEventListener('canplay', handleCanPlay);
+        
+        // 添加超时清理，防止内存泄漏
+        const timeoutId = setTimeout(() => {
+          audio.removeEventListener('canplay', handleCanPlay);
+        }, 10000); // 10秒超时
+        
+        // 返回清理函数
+        return () => {
+          audio.removeEventListener('canplay', handleCanPlay);
+          clearTimeout(timeoutId);
+        };
+      }
     } else {
       console.log('Pausing audio');
       audio.pause();

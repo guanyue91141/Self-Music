@@ -189,7 +189,7 @@ export const usePlayerStore = create<PlayerStore>()(
       setDuration: (duration) => set({ duration }),
 
       nextSong: () => {
-        const { repeatMode, shuffleMode, currentSong, duration } = get();
+        const { repeatMode, shuffleMode, currentSong, duration, isPlaying } = get();
         const nextSong = PlaylistManager.getNextSong(shuffleMode, repeatMode);
         
         if (nextSong) {
@@ -200,7 +200,8 @@ export const usePlayerStore = create<PlayerStore>()(
             currentSong: nextSong,
             currentTime: 0, 
             duration: isSameSong ? duration : 0, 
-            isPlaying: true, 
+            // 不再强制设置 isPlaying: true，保持当前的播放状态
+            // isPlaying: true, 
             ...(updatedPlaylist && {
               playlist: updatedPlaylist.songs,
               currentIndex: updatedPlaylist.currentIndex
@@ -213,7 +214,7 @@ export const usePlayerStore = create<PlayerStore>()(
       },
 
       previousSong: () => {
-        const { currentSong, duration } = get();
+        const { currentSong, duration, isPlaying } = get();
         const prevSong = PlaylistManager.getPreviousSong();
         
         if (prevSong) {
@@ -224,7 +225,8 @@ export const usePlayerStore = create<PlayerStore>()(
             currentSong: prevSong,
             currentTime: 0,
             duration: isSameSong ? duration : 0, 
-            isPlaying: true, 
+            // 不再强制设置 isPlaying: true，保持当前的播放状态
+            // isPlaying: true, 
             ...(updatedPlaylist && {
               playlist: updatedPlaylist.songs,
               currentIndex: updatedPlaylist.currentIndex
