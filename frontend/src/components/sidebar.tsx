@@ -15,9 +15,12 @@ import {
   Library,
   Smile,
   Users,
-  Settings
+  Settings,
+  CloudDownload,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePWAStore } from '@/lib/pwa-store';
 
 interface SidebarProps {
   className?: string;
@@ -29,54 +32,38 @@ export function Sidebar({ className }: SidebarProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   
   const pathname = usePathname();
+  const { updateAvailable, triggerUpdate, checkForUpdate, serviceWorkerVersion, remoteVersion } = usePWAStore();
 
-  const menuItems = [
-    {
-      icon: Play,
-      label: '播放器',
-      href: '/play',
-    },
-    {
-      icon: Library,
-      label: '所有歌曲',
-      href: '/songs',
-    },
-    {
-      icon: List,
-      label: '热门歌单',
-      href: '/playlists',
-    },
-    {
-      icon: Users,
-      label: '热门艺术家',
-      href: '/artists',
-    },
-    {
-      icon: Smile,
-      label: '心情音乐',
-      href: '/moods',
-    },
+  const baseMenuItems = [
+    { icon: Play, label: '播放器', href: '/play' },
+    { icon: Library, label: '所有歌曲', href: '/songs' },
+    { icon: List, label: '热门歌单', href: '/playlists' },
+    { icon: Users, label: '热门艺术家', href: '/artists' },
+    { icon: Smile, label: '心情音乐', href: '/moods' },
   ];
 
-  // 客户端挂载后设置初始化状态
+  const updateMenuItem = {
+    icon: updateAvailable ? CloudDownload : RefreshCw,
+    label: updateAvailable ? '升级版本' : '检查更新',
+    href: '#',
+    onClick: updateAvailable ? triggerUpdate : checkForUpdate,
+    isUpdate: true,
+  };
+
+  const moodsIndex = baseMenuItems.findIndex(item => item.href === '/moods');
+  const menuItems = [...baseMenuItems];
+  menuItems.splice(moodsIndex + 1, 0, updateMenuItem);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialized(true);
-    }, 50);
+    const timer = setTimeout(() => setIsInitialized(true), 50);
     return () => clearTimeout(timer);
   }, []);
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
-  const toggleMobile = () => {
-    setIsMobileOpen(!isMobileOpen);
-  };
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+  const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   return (
     <>
-      {/* Mobile overlay */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
@@ -90,7 +77,6 @@ export function Sidebar({ className }: SidebarProps) {
         )}
       </AnimatePresence>
 
-      {/* Mobile menu button */}
       <Button
         variant="ghost"
         size="icon"
@@ -100,23 +86,19 @@ export function Sidebar({ className }: SidebarProps) {
         <Menu className="h-4 w-4" />
       </Button>
 
-      {/* Sidebar */}
       <aside
         suppressHydrationWarning
         className={cn(
           "h-[100dvh] bg-background/95 backdrop-blur-sm border-r border-border transition-all duration-300",
-          // Mobile: fixed overlay, Desktop: takes layout space
           "fixed left-0 top-0 z-[50] w-[280px] lg:relative lg:z-auto",
           isCollapsed && "lg:w-16",
           !isCollapsed && "lg:w-[280px]",
-          // Mobile: hidden by default, Desktop: always visible
           "-translate-x-full lg:translate-x-0",
           isMobileOpen && "translate-x-0",
           className
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Header */}
           <div className={cn(
             "flex items-center p-6 transition-all duration-300 min-h-[88px]",
             isCollapsed ? "justify-center" : "justify-between"
@@ -142,81 +124,78 @@ export function Sidebar({ className }: SidebarProps) {
               variant="ghost"
               size="icon"
               onClick={toggleCollapse}
-              className={cn(
-                "hidden lg:flex shrink-0 h-8 w-8 transition-all",
-                isCollapsed ? "mx-auto" : ""
-              )}
+              className={cn("hidden lg:flex shrink-0 h-8 w-8 transition-all", isCollapsed ? "mx-auto" : "")}
             >
-              {isCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
           </div>
 
           <Separator />
 
-          {/* Navigation */}
           <nav 
             suppressHydrationWarning
-            className={cn(
-              "flex-1 space-y-1 p-4 transition-all",
-              isCollapsed && "p-2"
-            )}
+            className={cn("flex-1 space-y-1 p-4 transition-all", isCollapsed && "p-2")}
           >
             {menuItems.map((item) => {
               const Icon = item.icon;
-              return (
+              const content = (
+                <Button
+                  variant="ghost"
+                  onClick={item.onClick ? item.onClick : () => setIsMobileOpen(false)}
+                  className={cn(
+                    "w-full justify-start text-left font-normal transition-all duration-300",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    isInitialized && !item.isUpdate && pathname === item.href && "bg-accent text-accent-foreground",
+                    item.isUpdate && updateAvailable && "bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20",
+                    isCollapsed ? "px-0 justify-center" : "px-3"
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0 transition-all duration-300", isCollapsed ? "" : "mr-3")} />
+                  <span className={cn("truncate transition-all duration-300 overflow-hidden", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
+                    {item.label}
+                  </span>
+                </Button>
+              );
+
+              const versionInfo = (
+                !isCollapsed && item.isUpdate && serviceWorkerVersion && (
+                  <div className="text-xs text-muted-foreground text-center -mt-1 mb-1 px-3">
+                    {updateAvailable && remoteVersion ? 
+                      `当前: ${serviceWorkerVersion} | 最新: ${remoteVersion}` : 
+                      `当前版本: ${serviceWorkerVersion}`
+                    }
+                  </div>
+                )
+              );
+
+              const menuItemNode = item.isUpdate ? (
+                <div key="update-button">{content}</div>
+              ) : (
                 <div key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start text-left font-normal transition-all duration-300",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        isInitialized && pathname === item.href && "bg-accent text-accent-foreground",
-                        isCollapsed ? "px-0 justify-center" : "px-3"
-                      )}
-                    >
-                      <Icon className={cn("h-4 w-4 shrink-0 transition-all duration-300", isCollapsed ? "" : "mr-3")} />
-                      <span className={cn(
-                        "truncate transition-all duration-300 overflow-hidden",
-                        isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                      )}>
-                        {item.label}
-                      </span>
-                    </Button>
+                  <Link href={item.href} passHref legacyBehavior>
+                    <a onClick={(e) => { e.preventDefault(); setIsMobileOpen(false); window.location.href = item.href; }}>{content}</a>
                   </Link>
+                </div>
+              );
+
+              return (
+                <div key={item.isUpdate ? 'update-button' : item.href}>
+                  {menuItemNode}
+                  {versionInfo}
                 </div>
               );
             })}
           </nav>
 
-          {/* Footer */}
-          <div className="p-4 space-y-3">
-            {/* Netlify Badge */}
+          <div className="p-4 space-y-3 mt-auto">
             {!isCollapsed && (
               <div className="text-center">
-                <a 
-                  href="https://www.netlify.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block"
-                >
-                  <img 
-                    src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg" 
-                    alt="Deploys by Netlify" 
-                    className="h-8"
-                  />
+                <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" className="inline-block">
+                  <img src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg" alt="Deploys by Netlify" className="h-8" />
                 </a>
               </div>
             )}
             
-            {/* Admin Panel Link */}
             <div>
               <a href="/admin/login" onClick={() => setIsMobileOpen(false)}>
                 <Button
@@ -228,10 +207,7 @@ export function Sidebar({ className }: SidebarProps) {
                   )}
                 >
                   <Settings className={cn("h-4 w-4 shrink-0 transition-all duration-300", isCollapsed ? "" : "mr-3")} />
-                  <span className={cn(
-                    "truncate transition-all duration-300 overflow-hidden",
-                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                  )}>
+                  <span className={cn("truncate transition-all duration-300 overflow-hidden", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
                     管理面板
                   </span>
                 </Button>

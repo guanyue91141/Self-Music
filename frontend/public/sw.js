@@ -10,7 +10,7 @@
  * - App shell: Cache-first with update notification
  */
 
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.0.13';
 const CACHE_PREFIX = 'self-music';
 
 // Cache names
@@ -319,6 +319,13 @@ self.addEventListener('message', event => {
     });
   }
   
+  if (data.type === 'GET_VERSION') {
+    event.ports[0].postMessage({
+      type: 'VERSION_RESPONSE',
+      version: CACHE_VERSION
+    });
+  }
+
   if (data.type === 'GET_CACHE_STATUS') {
     // Return cache status
     Promise.all([

@@ -5,3 +5,6 @@ backend/music.db
 *.db
 .vscode/launch.json
 backend/music.db
+backend/music.db
+/backend
+*.db
