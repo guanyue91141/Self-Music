@@ -24,22 +24,30 @@ export const usePWAStore = create<PWAState>((set) => ({
   checkForUpdate: () => {},
   setCheckForUpdate: (checker) => set({ checkForUpdate: checker }),
   fetchServiceWorkerVersion: async () => {
+    console.log('pwa-store: fetchServiceWorkerVersion called.');
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.ready;
+        console.log('pwa-store: Service Worker registration ready.', registration);
         if (registration.active) {
+          console.log('pwa-store: Active Service Worker found.', registration.active);
           const messageChannel = new MessageChannel();
           messageChannel.port1.onmessage = (event) => {
             if (event.data && event.data.type === 'VERSION_RESPONSE') {
-              console.log('当前版本:', event.data.version);
+              console.log('pwa-store: Received VERSION_RESPONSE.', event.data.version);
               set({ serviceWorkerVersion: event.data.version });
             }
           };
           registration.active.postMessage({ type: 'GET_VERSION' }, [messageChannel.port2]);
+          console.log('pwa-store: GET_VERSION message posted.');
+        } else {
+          console.log('pwa-store: No active Service Worker found.');
         }
       } catch (error) {
-        console.error('Error fetching service worker version:', error);
+        console.error('pwa-store: Error fetching service worker version:', error);
       }
+    } else {
+      console.log('pwa-store: Service Worker not supported or not in browser environment.');
     }
   },
 }));

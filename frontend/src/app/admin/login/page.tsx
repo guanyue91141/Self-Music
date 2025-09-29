@@ -101,10 +101,13 @@ export default function AdminLogin() {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-muted-foreground space-y-1">
-            <p>默认账号: admin</p>
-            <p>默认密码: admin123</p>
-          </div>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push('/play')}
+          >
+            返回主页
+          </Button>
         </CardContent>
       </Card>
     </div>

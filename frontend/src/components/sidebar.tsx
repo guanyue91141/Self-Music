@@ -115,7 +115,7 @@ export function Sidebar({ className }: SidebarProps) {
                   Self-Music
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap">
-                  你的音乐流媒体平台
+                  多语种歌词支持
                 </p>
               </motion.div>
             )}
@@ -188,13 +188,6 @@ export function Sidebar({ className }: SidebarProps) {
           </nav>
 
           <div className="p-4 space-y-3 mt-auto">
-            {!isCollapsed && (
-              <div className="text-center">
-                <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" className="inline-block">
-                  <img src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg" alt="Deploys by Netlify" className="h-8" />
-                </a>
-              </div>
-            )}
             
             <div>
               <a href="/admin/login" onClick={() => setIsMobileOpen(false)}>

@@ -18,13 +18,24 @@ import { api } from '@/lib/api';
 import { PlaylistPanel } from '@/components/playlist-panel';
 import { isModernBrowser } from '@/lib/utils';
 import { API_BASE_URL } from '@/lib/base_url_config';
+import { usePWAStore } from '@/lib/pwa-store';
 
 export default function PlayClient() {
   const [isModern, setIsModern] = useState(true);
 
+  const { serviceWorkerVersion, fetchServiceWorkerVersion } = usePWAStore();
+
   useEffect(() => {
     setIsModern(isModernBrowser());
-  }, []);
+    fetchServiceWorkerVersion();
+  }, [fetchServiceWorkerVersion]);
+
+  useEffect(() => {
+    if (serviceWorkerVersion) {
+      console.log('Service Worker Version on /play load:', serviceWorkerVersion);
+    }
+  }, [serviceWorkerVersion]);
+
   // 自动加载默认歌曲
   useDefaultSongLoader();
 

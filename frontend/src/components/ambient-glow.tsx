@@ -96,7 +96,6 @@ export function AmbientGlow({
           ease: "easeInOut"
         }}
       />
-
       {/* Enhanced accent glow for better visibility */}
       {animated ? (
         <motion.div
@@ -123,7 +122,7 @@ export function AmbientGlow({
         />
       ) : (
         // Static accent glow when animation is disabled
-        <div
+        (<div
           className={cn(
             "absolute top-1/3 right-1/4 w-96 h-96 rounded-full",
             config.blur,
@@ -133,9 +132,8 @@ export function AmbientGlow({
             background: `radial-gradient(circle, rgb(var(--glow-accent-rgb, 236, 72, 153)) 0%, rgba(var(--glow-accent-rgb, 236, 72, 153), 0.5) 30%, rgba(var(--glow-accent-rgb, 236, 72, 153), 0.2) 60%, transparent 85%)`,
             ...safariAnimationStyles
           }}
-        />
+        />)
       )}
-
       {/* Enhanced third glow for depth and ambiance */}
       {animated && (
         <motion.div
