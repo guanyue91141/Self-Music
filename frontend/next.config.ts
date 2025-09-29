@@ -32,10 +32,6 @@ const nextConfig: NextConfig = {
     // 在构建过程中忽略ESLint错误
     ignoreDuringBuilds: false,
   },
-  // PWA基础配置
-  experimental: {
-    webVitalsAttribution: ['CLS', 'LCP'],
-  },
 
 };
 

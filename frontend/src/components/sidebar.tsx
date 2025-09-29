@@ -16,11 +16,10 @@ import {
   Smile,
   Users,
   Settings,
-  CloudDownload,
-  RefreshCw
+
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePWAStore } from '@/lib/pwa-store';
+
 
 import { LucideIcon } from 'lucide-react';
 
@@ -32,8 +31,6 @@ interface MenuItem {
   icon: LucideIcon;
   label: string;
   href: string;
-  onClick?: () => void;
-  isUpdate?: boolean;
 }
 
 export function Sidebar({ className }: SidebarProps) {
@@ -42,27 +39,13 @@ export function Sidebar({ className }: SidebarProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   
   const pathname = usePathname();
-  const { updateAvailable, triggerUpdate, checkForUpdate, serviceWorkerVersion, remoteVersion } = usePWAStore();
-
-  const baseMenuItems: MenuItem[] = [
+  const menuItems: MenuItem[] = [
     { icon: Play, label: '播放器', href: '/play' },
     { icon: Library, label: '所有歌曲', href: '/songs' },
     { icon: List, label: '热门歌单', href: '/playlists' },
     { icon: Users, label: '热门艺术家', href: '/artists' },
     { icon: Smile, label: '心情音乐', href: '/moods' },
   ];
-
-  const updateMenuItem: MenuItem = {
-    icon: updateAvailable ? CloudDownload : RefreshCw,
-    label: updateAvailable ? '升级版本' : '检查更新',
-    href: '#',
-    onClick: updateAvailable ? triggerUpdate : checkForUpdate,
-    isUpdate: true,
-  };
-
-  const moodsIndex = baseMenuItems.findIndex(item => item.href === '/moods');
-  const menuItems: MenuItem[] = [...baseMenuItems];
-  menuItems.splice(moodsIndex + 1, 0, updateMenuItem);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsInitialized(true), 50);
@@ -155,8 +138,7 @@ export function Sidebar({ className }: SidebarProps) {
                   className={cn(
                     "w-full justify-start text-left font-normal transition-all duration-300",
                     "hover:bg-accent hover:text-accent-foreground",
-                    isInitialized && !item.isUpdate && pathname === item.href && "bg-accent text-accent-foreground",
-                    item.isUpdate && updateAvailable && "bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20",
+                    isInitialized && pathname === item.href && "bg-accent text-accent-foreground",
                     isCollapsed ? "px-0 justify-center" : "px-3"
                   )}
                 >
@@ -167,20 +149,7 @@ export function Sidebar({ className }: SidebarProps) {
                 </Button>
               );
 
-              const versionInfo = (
-                !isCollapsed && item.isUpdate && serviceWorkerVersion && (
-                  <div className="text-xs text-muted-foreground text-center -mt-1 mb-1 px-3">
-                    {updateAvailable && remoteVersion ? 
-                      `当前: ${serviceWorkerVersion} | 最新: ${remoteVersion}` : 
-                      `当前版本: ${serviceWorkerVersion}`
-                    }
-                  </div>
-                )
-              );
-
-              const menuItemNode = item.isUpdate ? (
-                <div key="update-button">{content}</div>
-              ) : (
+              const menuItemNode = (
                 <div key={item.href}>
                   <Link href={item.href} onClick={() => setIsMobileOpen(false)}>
                     {content}
@@ -189,9 +158,8 @@ export function Sidebar({ className }: SidebarProps) {
               );
 
               return (
-                <div key={item.isUpdate ? 'update-button' : item.href}>
+                <div key={item.href}>
                   {menuItemNode}
-                  {versionInfo}
                 </div>
               );
             })}
