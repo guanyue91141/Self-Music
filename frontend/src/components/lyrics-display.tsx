@@ -5,13 +5,18 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSafariOptimizedAnimation, getIOSScrollFix } from '@/lib/safari-fixes';
 
-interface LyricLine {
+export interface LyricLine {
   time: number;
   text: string;
 }
 
+export interface GroupedLyricLine {
+  time: number;
+  texts: string[]; // 支持多个文本（多语种）
+}
+
 interface LyricsDisplayProps {
-  lyrics: LyricLine[];
+  lyrics: GroupedLyricLine[];
   currentTime: number;
   onLyricClick: (time: number) => void;
   className?: string;
@@ -288,7 +293,7 @@ export function LyricsDisplay({
               className={cn(
                 "cursor-pointer transition-all duration-300 ease-in-out relative group",
                 "hover:bg-transparent rounded-lg px-3 md:px-6 py-3 md:py-4", // 移除灰色背景
-                "text-center min-h-[60px] md:min-h-[72px] flex items-center justify-center w-full"
+                "text-center min-h-[60px] md:min-h-[72px] flex flex-col items-center justify-center w-full space-y-1"
               )}
               onClick={() => {
                 // 重置手动滚动状态
@@ -364,31 +369,34 @@ export function LyricsDisplay({
               </AnimatePresence>
               
               {/* 歌词文本容器 - 确保完全居中 */}
-              <div className="flex-1 flex items-center justify-center">
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ 
-                    opacity: 1,
-                    scale: isActive ? 1.05 : 1
-                  }}
-                  transition={{ 
-                    opacity: { duration: 0.4, delay: index * 0.03 },
-                    scale: { duration: 0.3 }
-                  }}
-                  className={cn(
-                    "text-base leading-relaxed transition-all duration-300",
-                    "select-none relative z-10 text-center",
-                    // 窄屏精简显示：长行省略号；中等及以上屏幕不截断
-                    compact && "w-full line-clamp-1 md:line-clamp-none",
-                    {
-                      "text-xl lg:text-2xl font-semibold text-primary": isActive,
-                      "text-muted-foreground/60 hover:text-muted-foreground": isPassed,
-                      "text-muted-foreground hover:text-foreground": !isActive && !isPassed,
-                    }
-                  )}
-                >
-                  {lyric.text}
-                </motion.p>
+              <div className="flex-1 flex flex-col items-center justify-center w-full">
+                {lyric.texts.map((text, textIndex) => (
+                  <motion.p
+                    key={textIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ 
+                      opacity: 1,
+                      scale: isActive ? 1.05 : 1
+                    }}
+                    transition={{ 
+                      opacity: { duration: 0.4, delay: (index * 0.03) + (textIndex * 0.01) },
+                      scale: { duration: 0.3 }
+                    }}
+                    className={cn(
+                      "text-base leading-relaxed transition-all duration-300",
+                      "select-none relative z-10 text-center w-full",
+                      // 窄屏精简显示：长行省略号；中等及以上屏幕不截断
+                      compact && "w-full line-clamp-1 md:line-clamp-none",
+                      {
+                        "text-xl lg:text-2xl font-semibold text-primary": isActive,
+                        "text-muted-foreground/60 hover:text-muted-foreground": isPassed,
+                        "text-muted-foreground hover:text-foreground": !isActive && !isPassed,
+                      }
+                    )}
+                  >
+                    {text}
+                  </motion.p>
+                ))}
               </div>
             </motion.div>
           );
@@ -399,7 +407,7 @@ export function LyricsDisplay({
 }
 
 interface LyricsCardProps {
-  lyrics: LyricLine[];
+  lyrics: GroupedLyricLine[];
   currentTime: number;
   onLyricClick: (time: number) => void;
   className?: string;
@@ -482,7 +490,7 @@ export function LyricsCard({
 }
 
 // Utility function to parse LRC format lyrics
-export function parseLyrics(lrcContent: string): LyricLine[] {
+export function parseLyrics(lrcContent: string): GroupedLyricLine[] {
   const lines = lrcContent.split('\n');
   const lyrics: LyricLine[] = [];
 
@@ -503,5 +511,26 @@ export function parseLyrics(lrcContent: string): LyricLine[] {
     }
   }
 
-  return lyrics.sort((a, b) => a.time - b.time);
+  // 按时间排序
+  lyrics.sort((a, b) => a.time - b.time);
+
+  // 将具有相同时间戳的歌词分组
+  const groupedLyrics: GroupedLyricLine[] = [];
+  for (let i = 0; i < lyrics.length; i++) {
+    const current = lyrics[i];
+    const result: GroupedLyricLine = {
+      time: current.time,
+      texts: [current.text]
+    };
+
+    // 检查后续是否有相同时间戳的歌词
+    while (i + 1 < lyrics.length && Math.abs(lyrics[i + 1].time - current.time) < 0.01) {
+      i++;
+      result.texts.push(lyrics[i].text);
+    }
+
+    groupedLyrics.push(result);
+  }
+
+  return groupedLyrics;
 }

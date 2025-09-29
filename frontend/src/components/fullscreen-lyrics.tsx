@@ -6,14 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
-
-interface LyricLine {
-  time: number;
-  text: string;
-}
+import { GroupedLyricLine } from '@/lib/lyrics-parser';
 
 interface FullscreenLyricsProps {
-  lyrics: LyricLine[];
+  lyrics: GroupedLyricLine[];
   currentTime: number;
   onLyricClick: (time: number) => void;
   isOpen: boolean;

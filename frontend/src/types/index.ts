@@ -74,6 +74,11 @@ export interface LyricLine {
   text: string;
 }
 
+export interface GroupedLyricLine {
+  time: number;
+  texts: string[]; // 支持多个文本（多语种）
+}
+
 export interface Lyrics {
   songId: string;
   lines: LyricLine[];

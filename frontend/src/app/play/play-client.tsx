@@ -4,13 +4,13 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePlayerStore } from '@/lib/store';
 import { useDefaultSongLoader } from '@/lib/use-default-song-loader';
-import { parseLRC } from '@/lib/lyrics-parser';
+import { parseLRC, GroupedLyricLine } from '@/lib/lyrics-parser';
 import { DEFAULT_LYRICS } from '@/lib/default-song';
 import { Sidebar } from '@/components/sidebar';
 import { PlayerLayout, PlayerLeftSection, PlayerRightSection } from '@/components/player-layout';
 import { AlbumCover, SongInfo } from '@/components/song-info';
 import { PlayerControls } from '@/components/player-controls';
-import { LyricsCard, LyricsDisplay } from '@/components/lyrics-display';
+import { LyricsCard, LyricsDisplay, LyricLine } from '@/components/lyrics-display';
 import { FullscreenLyrics } from '@/components/fullscreen-lyrics';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AmbientGlow } from '@/components/ambient-glow';
@@ -143,18 +143,18 @@ export default function PlayClient() {
         const lines = currentSong.lyrics.split('\n').filter(line => line.trim());
         return lines.map((text, index) => ({
           time: index * 10, // 每行间隔10秒
-          text: text.trim()
+          texts: [text.trim()]
         }));
       }
     }
 
     // 如果没有歌词，显示歌曲基本信息
     return [
-      { time: 0, text: `♪ ${currentSong.title} ♪` },
-      { time: 10, text: `演唱：${currentSong.artist?.name || currentSong.artist}` },
-      { time: 20, text: `专辑：${currentSong.album?.title || currentSong.album || '单曲'}` },
-      { time: 30, text: '暂无歌词' },
-      { time: 40, text: '享受这美妙的旋律' },
+      { time: 0, texts: [`♪ ${currentSong.title} ♪`] },
+      { time: 10, texts: [`演唱：${currentSong.artist?.name || currentSong.artist}`] },
+      { time: 20, texts: [`专辑：${currentSong.album?.title || currentSong.album || '单曲'}`] },
+      { time: 30, texts: ['暂无歌词'] },
+      { time: 40, texts: ['享受这美妙的旋律'] },
     ];
   }, [currentSong]);
 
@@ -278,15 +278,15 @@ export default function PlayClient() {
   };
 
   // 当没有歌曲时显示默认歌词
-  const defaultLyrics = [
-    { time: 0, text: '欢迎使用 Self-Music' },
-    { time: 10, text: '你的专属音乐流媒体平台' },
-    { time: 20, text: '在这里发现更多美妙的音乐' },
-    { time: 30, text: '让音乐陪伴你的每一刻' },
-    { time: 40, text: '♪ 享受音乐带来的快乐 ♪' },
+  const defaultLyrics: GroupedLyricLine[] = [
+    { time: 0, texts: ['欢迎使用 Self-Music'] },
+    { time: 10, texts: ['你的专属音乐流媒体平台'] },
+    { time: 20, texts: ['在这里发现更多美妙的音乐'] },
+    { time: 30, texts: ['让音乐陪伴你的每一刻'] },
+    { time: 40, texts: ['♪ 享受音乐带来的快乐 ♪'] },
   ];
 
-  const displayLyrics = currentSong ? currentLyrics : defaultLyrics;
+  const displayLyrics: GroupedLyricLine[] = currentSong ? currentLyrics : defaultLyrics;
 
   return (
     <div className="h-full bg-background relative overflow-hidden lg:flex">

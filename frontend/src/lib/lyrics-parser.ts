@@ -4,7 +4,12 @@ export interface LyricLine {
   text: string;
 }
 
-export function parseLRC(lrcContent: string): LyricLine[] {
+export interface GroupedLyricLine {
+  time: number;
+  texts: string[]; // 支持多个文本（多语种）
+}
+
+export function parseLRC(lrcContent: string): GroupedLyricLine[] {
   const lines = lrcContent.split('\n');
   const lyrics: LyricLine[] = [];
 
@@ -32,10 +37,30 @@ export function parseLRC(lrcContent: string): LyricLine[] {
   }
 
   // 按时间排序
-  return lyrics.sort((a, b) => a.time - b.time);
+  lyrics.sort((a, b) => a.time - b.time);
+
+  // 将具有相同时间戳的歌词分组
+  const groupedLyrics: GroupedLyricLine[] = [];
+  for (let i = 0; i < lyrics.length; i++) {
+    const current = lyrics[i];
+    const result: GroupedLyricLine = {
+      time: current.time,
+      texts: [current.text]
+    };
+
+    // 检查后续是否有相同时间戳的歌词
+    while (i + 1 < lyrics.length && Math.abs(lyrics[i + 1].time - current.time) < 0.01) {
+      i++;
+      result.texts.push(lyrics[i].text);
+    }
+
+    groupedLyrics.push(result);
+  }
+
+  return groupedLyrics;
 }
 
-export function getCurrentLyricIndex(lyrics: LyricLine[], currentTime: number): number {
+export function getCurrentLyricIndex(lyrics: GroupedLyricLine[], currentTime: number): number {
   for (let i = lyrics.length - 1; i >= 0; i--) {
     if (currentTime >= lyrics[i].time) {
       return i;
@@ -44,7 +69,7 @@ export function getCurrentLyricIndex(lyrics: LyricLine[], currentTime: number): 
   return -1;
 }
 
-export function getNextLyricTime(lyrics: LyricLine[], currentIndex: number): number | null {
+export function getNextLyricTime(lyrics: GroupedLyricLine[], currentIndex: number): number | null {
   if (currentIndex >= 0 && currentIndex < lyrics.length - 1) {
     return lyrics[currentIndex + 1].time;
   }
