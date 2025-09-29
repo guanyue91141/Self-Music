@@ -61,6 +61,45 @@ export default function PlayClient() {
     replacePlaylistAndPlay,
   } = usePlayerStore();
 
+  // 在页面加载时获取热门歌曲
+  useEffect(() => {
+    const fetchHotSongs = async () => {
+      try {
+        const response = await api.getHotSongs(50);
+        if (response.success && response.data) {
+          console.log(`获取到 ${response.data.length} 首热门歌曲`);
+          // 在没有播放列表或当前播放列表为空的情况下，可以考虑使用热门歌曲作为默认播放列表
+          if (playlist.length === 0) {
+            // 使用热门歌曲创建虚拟播放列表，但不自动播放
+            // 这里创建一个符合Playlist接口的对象
+            const hotSongsPlaylist = {
+              id: 'hot-songs-playlist',
+              name: '热门歌曲',
+              description: '系统推荐的热门歌曲',
+              coverUrl: null,
+              songs: response.data,
+              songIds: response.data.map(song => song.id),
+              songCount: response.data.length,
+              playCount: 0,
+              duration: response.data.reduce((total, song) => total + (song.duration || 0), 0),
+              creator: 'system',
+              isPublic: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            setPlaylistWithInfo(hotSongsPlaylist, 0);
+          }
+        } else {
+          console.error('获取热门歌曲失败:', response.error);
+        }
+      } catch (error) {
+        console.error('获取热门歌曲时发生错误:', error);
+      }
+    };
+
+    fetchHotSongs();
+  }, [playlist.length, setPlaylistWithInfo]);
+
   const [isFullscreenLyrics, setIsFullscreenLyrics] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const searchParams = useSearchParams();
