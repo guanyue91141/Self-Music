@@ -134,7 +134,7 @@ export function Sidebar({ className }: SidebarProps) {
               const content = (
                 <Button
                   variant="ghost"
-                  onClick={item.onClick ? item.onClick : () => setIsMobileOpen(false)}
+                  onClick={() => setIsMobileOpen(false)}
                   className={cn(
                     "w-full justify-start text-left font-normal transition-all duration-300",
                     "hover:bg-accent hover:text-accent-foreground",
