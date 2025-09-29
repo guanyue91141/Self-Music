@@ -3,3 +3,9 @@ node_modules/
 *.log
 backend/music.db
 *.db
+.vscode/launch.json
+backend/music.db
+backend/music.db
+*.db
+/backend
+backend/music.db
