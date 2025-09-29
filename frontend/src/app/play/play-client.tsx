@@ -76,7 +76,7 @@ export default function PlayClient() {
               id: 'hot-songs-playlist',
               name: '热门歌曲',
               description: '系统推荐的热门歌曲',
-              coverUrl: null,
+              coverUrl: undefined,
               songs: response.data,
               songIds: response.data.map(song => song.id),
               songCount: response.data.length,
