@@ -4,11 +4,14 @@ import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSafariOptimizedAnimation, getIOSScrollFix } from '@/lib/safari-fixes';
-import { LyricLine, DualLyricLine } from '@/lib/lyrics-parser';
+
+interface LyricLine {
+  time: number;
+  text: string;
+}
 
 interface LyricsDisplayProps {
-  lyrics: LyricLine[] | DualLyricLine[];
-  isDualLyrics?: boolean; // 标识是否为双语歌词
+  lyrics: LyricLine[];
   currentTime: number;
   onLyricClick: (time: number) => void;
   className?: string;
@@ -25,7 +28,6 @@ const formatTime = (seconds: number) => {
 
 export function LyricsDisplay({
   lyrics,
-  isDualLyrics = false,
   currentTime,
   onLyricClick,
   className,
@@ -267,7 +269,7 @@ export function LyricsDisplay({
           perspective: '1000px', // Enable 3D acceleration
         }}
       >
-        {lyrics.map((lyric: any, index) => {
+        {lyrics.map((lyric, index) => {
           const isActive = index === currentLineIndex;
           const isPassed = index < currentLineIndex;
           const isHovered = index === hoveredIndex;
@@ -363,83 +365,30 @@ export function LyricsDisplay({
               
               {/* 歌词文本容器 - 确保完全居中 */}
               <div className="flex-1 flex items-center justify-center">
-                {isDualLyrics ? (
-                  <div className="flex flex-col items-center gap-1 w-full">
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ 
-                        opacity: 1,
-                        scale: isActive ? 1.05 : 1
-                      }}
-                      transition={{ 
-                        opacity: { duration: 0.4, delay: index * 0.03 },
-                        scale: { duration: 0.3 }
-                      }}
-                      className={cn(
-                        "text-base leading-relaxed transition-all duration-300",
-                        "select-none relative z-10 text-center",
-                        // 窄屏精简显示：长行省略号；中等及以上屏幕不截断
-                        compact && "w-full line-clamp-1 md:line-clamp-none",
-                        {
-                          "text-xl lg:text-2xl font-semibold text-primary": isActive,
-                          "text-muted-foreground/60 hover:text-muted-foreground": isPassed,
-                          "text-muted-foreground hover:text-foreground": !isActive && !isPassed,
-                        }
-                      )}
-                    >
-                      {lyric.original}
-                    </motion.p>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ 
-                        opacity: 1,
-                        scale: isActive ? 1.05 : 1
-                      }}
-                      transition={{ 
-                        opacity: { duration: 0.4, delay: index * 0.03 },
-                        scale: { duration: 0.3 }
-                      }}
-                      className={cn(
-                        "text-sm leading-relaxed transition-all duration-300",
-                        "select-none relative z-10 text-center",
-                        // 窄屏精简显示：长行省略号；中等及以上屏幕不截断
-                        compact && "w-full line-clamp-1 md:line-clamp-none",
-                        {
-                          "font-medium text-primary/80": isActive,
-                          "text-muted-foreground/50": isPassed,
-                          "text-muted-foreground/70": !isActive && !isPassed,
-                        }
-                      )}
-                    >
-                      {lyric.translation}
-                    </motion.p>
-                  </div>
-                ) : (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ 
-                      opacity: 1,
-                      scale: isActive ? 1.05 : 1
-                    }}
-                    transition={{ 
-                      opacity: { duration: 0.4, delay: index * 0.03 },
-                      scale: { duration: 0.3 }
-                    }}
-                    className={cn(
-                      "text-base leading-relaxed transition-all duration-300",
-                      "select-none relative z-10 text-center",
-                      // 窄屏精简显示：长行省略号；中等及以上屏幕不截断
-                      compact && "w-full line-clamp-1 md:line-clamp-none",
-                      {
-                        "text-xl lg:text-2xl font-semibold text-primary": isActive,
-                        "text-muted-foreground/60 hover:text-muted-foreground": isPassed,
-                        "text-muted-foreground hover:text-foreground": !isActive && !isPassed,
-                      }
-                    )}
-                  >
-                    {lyric.text}
-                  </motion.p>
-                )}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ 
+                    opacity: 1,
+                    scale: isActive ? 1.05 : 1
+                  }}
+                  transition={{ 
+                    opacity: { duration: 0.4, delay: index * 0.03 },
+                    scale: { duration: 0.3 }
+                  }}
+                  className={cn(
+                    "text-base leading-relaxed transition-all duration-300",
+                    "select-none relative z-10 text-center",
+                    // 窄屏精简显示：长行省略号；中等及以上屏幕不截断
+                    compact && "w-full line-clamp-1 md:line-clamp-none",
+                    {
+                      "text-xl lg:text-2xl font-semibold text-primary": isActive,
+                      "text-muted-foreground/60 hover:text-muted-foreground": isPassed,
+                      "text-muted-foreground hover:text-foreground": !isActive && !isPassed,
+                    }
+                  )}
+                >
+                  {lyric.text}
+                </motion.p>
               </div>
             </motion.div>
           );
@@ -450,8 +399,7 @@ export function LyricsDisplay({
 }
 
 interface LyricsCardProps {
-  lyrics: LyricLine[] | DualLyricLine[];
-  isDualLyrics?: boolean; // 标识是否为双语歌词
+  lyrics: LyricLine[];
   currentTime: number;
   onLyricClick: (time: number) => void;
   className?: string;
@@ -463,7 +411,6 @@ interface LyricsCardProps {
 
 export function LyricsCard({
   lyrics,
-  isDualLyrics = false,
   currentTime,
   onLyricClick,
   className,
@@ -525,7 +472,6 @@ export function LyricsCard({
       >
         <LyricsDisplay
           lyrics={lyrics}
-          isDualLyrics={isDualLyrics}
           currentTime={currentTime}
           onLyricClick={onLyricClick}
           compact={compact}

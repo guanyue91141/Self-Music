@@ -3,11 +3,14 @@
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LyricLine, DualLyricLine } from '@/lib/lyrics-parser';
+
+interface LyricLine {
+  time: number;
+  text: string;
+}
 
 interface MobileLyricsDisplayProps {
-  lyrics: LyricLine[] | DualLyricLine[];
-  isDualLyrics?: boolean; // 标识是否为双语歌词
+  lyrics: LyricLine[];
   currentTime: number;
   onLyricClick?: (time: number) => void;
   className?: string;
@@ -15,7 +18,6 @@ interface MobileLyricsDisplayProps {
 
 export function MobileLyricsDisplay({
   lyrics,
-  isDualLyrics = false,
   currentTime,
   onLyricClick,
   className,
@@ -82,7 +84,7 @@ export function MobileLyricsDisplay({
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="space-y-2 px-2 py-2">
-          {lyrics.map((lyric: any, index) => {
+          {lyrics.map((lyric, index) => {
             const isActive = index === currentLineIndex;
             const isNearActive = Math.abs(index - currentLineIndex) <= 1;
             
@@ -111,14 +113,7 @@ export function MobileLyricsDisplay({
                   }
                 }}
               >
-                {isDualLyrics ? (
-                  <div className="flex flex-col">
-                    <span>{lyric.original}</span>
-                    <span className="text-xs opacity-70">{lyric.translation}</span>
-                  </div>
-                ) : (
-                  lyric.text
-                )}
+                {lyric.text}
               </motion.div>
             );
           })}
