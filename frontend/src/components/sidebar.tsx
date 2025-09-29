@@ -22,8 +22,18 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePWAStore } from '@/lib/pwa-store';
 
+import { LucideIcon } from 'lucide-react';
+
 interface SidebarProps {
   className?: string;
+}
+
+interface MenuItem {
+  icon: LucideIcon;
+  label: string;
+  href: string;
+  onClick?: () => void;
+  isUpdate?: boolean;
 }
 
 export function Sidebar({ className }: SidebarProps) {
@@ -34,7 +44,7 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { updateAvailable, triggerUpdate, checkForUpdate, serviceWorkerVersion, remoteVersion } = usePWAStore();
 
-  const baseMenuItems = [
+  const baseMenuItems: MenuItem[] = [
     { icon: Play, label: '播放器', href: '/play' },
     { icon: Library, label: '所有歌曲', href: '/songs' },
     { icon: List, label: '热门歌单', href: '/playlists' },
@@ -42,7 +52,7 @@ export function Sidebar({ className }: SidebarProps) {
     { icon: Smile, label: '心情音乐', href: '/moods' },
   ];
 
-  const updateMenuItem = {
+  const updateMenuItem: MenuItem = {
     icon: updateAvailable ? CloudDownload : RefreshCw,
     label: updateAvailable ? '升级版本' : '检查更新',
     href: '#',
@@ -51,7 +61,7 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   const moodsIndex = baseMenuItems.findIndex(item => item.href === '/moods');
-  const menuItems = [...baseMenuItems];
+  const menuItems: MenuItem[] = [...baseMenuItems];
   menuItems.splice(moodsIndex + 1, 0, updateMenuItem);
 
   useEffect(() => {

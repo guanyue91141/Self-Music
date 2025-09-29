@@ -24,7 +24,7 @@ const CACHES = {
 
 // Cache durations (in milliseconds)
 const CACHE_DURATIONS = {
-  static: 6 * 60 * 60 * 1000,        // 6 hours
+  static: 0 * 60 * 60 * 1000,        // 6 hours
   audio: 60 * 24 * 60 * 60 * 1000,   // 2 months  
   images: 60 * 24 * 60 * 60 * 1000,  // 2 months
   api: 5 * 60 * 1000                 // 5 minutes
@@ -212,7 +212,9 @@ self.addEventListener('activate', event => {
       // Take control of all clients
       self.clients.claim()
     ])
-  );
+  ).then(() => {
+    console.log(`SW加载完成，版本号：${CACHE_VERSION}`);
+  });
 });
 
 // Fetch event - implement caching strategies
