@@ -182,8 +182,8 @@ export function Sidebar({ className }: SidebarProps) {
                 <div key="update-button">{content}</div>
               ) : (
                 <div key={item.href}>
-                  <Link href={item.href} passHref legacyBehavior>
-                    <a onClick={(e) => { e.preventDefault(); setIsMobileOpen(false); window.location.href = item.href; }}>{content}</a>
+                  <Link href={item.href} onClick={() => setIsMobileOpen(false)}>
+                    {content}
                   </Link>
                 </div>
               );
