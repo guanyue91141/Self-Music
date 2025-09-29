@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 import { 
   Plus, 
   Edit, 
@@ -75,7 +76,7 @@ import {
   Scissors,
   Brush,
   Palette as PaletteIcon,
-  Image,
+  Image as ImageIcon,
   FileText,
   Download,
   Upload,
@@ -144,6 +145,7 @@ const ICON_OPTIONS = [
   { icon: 'Flag', name: '旗帜', component: Flag },
   { icon: 'Brush', name: '画笔', component: Brush },
   { icon: 'PaletteIcon', name: '调色板', component: PaletteIcon },
+  { icon: 'ImageIcon', name: '图片', component: ImageIcon },
   { icon: 'Music', name: '音乐', component: Music }
 ];
 
@@ -475,9 +477,11 @@ export default function MoodsPage() {
                             )}
                             {mood.coverUrl && (
                               <div className="flex items-center gap-2 mt-2">
-                                <img 
+                                <Image 
                                   src={mood.coverUrl} 
                                   alt={mood.name}
+                                  width={32}
+                                  height={32}
                                   className="w-8 h-8 rounded object-cover"
                                 />
                                 <span className="text-xs text-muted-foreground">封面图片</span>

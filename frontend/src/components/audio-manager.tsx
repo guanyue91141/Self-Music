@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { usePlayerStore } from '@/lib/store';
-import { useSongsStore } from '@/lib/data-stores';  // 导入歌曲存储以记录播放量
-import { API_BASE_URL } from '@/lib/base_url_config';
+import { useSongsStore } from '@/lib/data-stores';
+import { API_BASE_URL, api } from '@/lib/api';
 
 export function AudioManager() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timeUpdateRef = useRef<number | null>(null);
   const defaultTitleRef = useRef<string | null>(null);
+  const currentAudioBlobUrl = useRef<string | null>(null);
 
   const {
     currentSong,
@@ -23,8 +24,8 @@ export function AudioManager() {
     nextSong,
   } = usePlayerStore();
 
-  const { recordPlay } = useSongsStore();  // 获取播放量记录方法
-  const hasRecordedPlay = useRef<Set<string>>(new Set());  // 跟踪已记录播放量的歌曲
+  const { recordPlay } = useSongsStore();
+  const hasRecordedPlay = useRef<Set<string>>(new Set());
 
   // 处理时间跳转的回调函数
   const handleSeek = useCallback((time: number) => {
@@ -53,6 +54,10 @@ export function AudioManager() {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
+      }
+      if (currentAudioBlobUrl.current) {
+        URL.revokeObjectURL(currentAudioBlobUrl.current);
+        currentAudioBlobUrl.current = null;
       }
 
       // 恢复标题
@@ -207,45 +212,67 @@ export function AudioManager() {
       audio.removeEventListener('error', handleError);
       audio.removeEventListener('seeked', handleSeeked);
     };
-  }, [setCurrentTime, setDuration, pause, nextSong, currentSong, recordPlay]);  // 添加currentSong和recordPlay依赖
+  }, [setCurrentTime, setDuration, pause, nextSong, currentSong, recordPlay]);
 
   // 处理歌曲切换
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
     
+    // 清理旧的 Blob URL
+    if (currentAudioBlobUrl.current) {
+      URL.revokeObjectURL(currentAudioBlobUrl.current);
+      currentAudioBlobUrl.current = null;
+    }
+
     // 当歌曲切换时，重置播放记录（允许重复播放同一首歌曲时记录播放量）
     if (currentSong.id && currentSong.id !== 'demo-song-1') {
       hasRecordedPlay.current.clear();
     }
     
-    // 始终使用流式传输端点以确保正确的认证和文件处理
-    // 即使currentSong.audioUrl存在，我们也使用流式传输端点
-    const audioUrl = `${API_BASE_URL}/songs/${currentSong.id}/stream`;
-    
-    console.log('Loading new song:', currentSong.title, 'URL:', audioUrl);
-    
+    const loadAudio = async () => {
+      setDuration(0); // Reset duration until new audio is loaded
+      const result = await api.getSongWithCache(currentSong.id);
 
-    
-    // 检查是否是新的音频源
-    if (audio.src !== audioUrl) {
-      // 停止之前的时间更新
-      if (timeUpdateRef.current) {
-        cancelAnimationFrame(timeUpdateRef.current);
-        timeUpdateRef.current = null;
+      if (result.success && result.data) {
+        const songData = result.data;
+        let audioSrc = '';
+
+        if (songData.audioBlob) {
+          // Use cached Blob
+          audioSrc = URL.createObjectURL(songData.audioBlob);
+          currentAudioBlobUrl.current = audioSrc;
+          console.log('Using cached audio Blob for:', currentSong.title);
+        } else {
+          // Fallback to network stream if Blob not available (shouldn't happen if getSongWithCache works)
+          audioSrc = `${API_BASE_URL}/songs/${currentSong.id}/stream`;
+          console.log('Using network stream for:', currentSong.title);
+        }
+
+        if (audio.src !== audioSrc) {
+          if (timeUpdateRef.current) {
+            cancelAnimationFrame(timeUpdateRef.current);
+            timeUpdateRef.current = null;
+          }
+          audio.src = audioSrc;
+          audio.load();
+          console.log('Audio source set to:', audioSrc);
+        } else {
+          if (audio.duration > 0 && audio.duration !== Infinity) {
+            console.log('Same audio source, updating duration:', audio.duration);
+            setDuration(audio.duration);
+          }
+        }
+      } else {
+        console.error('Failed to load song with cache:', result.error);
+        // Optionally set an error state in the store
+        pause();
       }
-      
-      audio.src = audioUrl;
-      audio.load();
-      console.log('Audio source set to:', audioUrl);
-    } else {
-      // 如果是相同的音频源，检查是否需要更新时长
-      if (audio.duration > 0 && audio.duration !== Infinity) {
-        console.log('Same audio source, updating duration:', audio.duration);
-        setDuration(audio.duration);
-      }
-    }
-  }, [currentSong, setDuration]);
+    };
+
+    loadAudio();
+
+  }, [currentSong, setDuration, pause]);
 
   // 处理播放/暂停
   useEffect(() => {

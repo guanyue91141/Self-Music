@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 import { 
   Plus, 
   Edit, 
@@ -288,7 +289,13 @@ export default function ArtistsPage() {
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                           {artist.avatar ? (
-                            <img src={artist.avatar} alt={artist.name} className="w-full h-full rounded-full object-cover" />
+                            <Image 
+                              src={artist.avatar} 
+                              alt={artist.name} 
+                              width={64} 
+                              height={64} 
+                              className="w-full h-full rounded-full object-cover" 
+                            />
                           ) : (
                             <User className="h-6 w-6 text-muted-foreground" />
                           )}

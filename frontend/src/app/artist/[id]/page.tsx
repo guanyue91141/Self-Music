@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Image from 'next/image';
 import { 
   Play, 
   Heart, 
@@ -440,9 +441,11 @@ function ArtistDetailContent() {
                         
                         {album.coverUrl && (
                           <div className="aspect-square w-full rounded-lg mb-4 overflow-hidden bg-muted/10">
-                            <img 
+                            <Image 
                               src={album.coverUrl} 
                               alt={album.title}
+                              width={300}
+                              height={300}
                               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                             />
                           </div>

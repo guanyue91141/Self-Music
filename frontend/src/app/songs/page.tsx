@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import Image from 'next/image';
 import { Search, Shuffle, PlayCircle, ChevronRight, ChevronLeft, ArrowUpDown, Share2, Check } from 'lucide-react';
 import { 
   Select,
@@ -487,9 +488,11 @@ export default function SongsPage() {
                               </div>
                               
                               <div className="flex items-center flex-1 min-w-0 mr-2">
-                                <img
+                                <Image
                                   src={getOptimizedImageUrl(song.coverUrl, 'CARD_SMALL')}
                                   alt={song.title}
+                                  width={40}
+                                  height={40}
                                   className="w-10 h-10 rounded mr-3 object-cover flex-shrink-0"
                                 />
                                 <div className="min-w-0 max-w-[150px] sm:max-w-[200px] lg:max-w-xs">
@@ -543,9 +546,11 @@ export default function SongsPage() {
                                 </div>
                                 
                                 <div className="flex items-center flex-1 min-w-0 mr-2">
-                                  <img
+                                  <Image
                                     src={getOptimizedImageUrl(song.coverUrl, 'CARD_SMALL')}
                                     alt={song.title}
+                                    width={40}
+                                    height={40}
                                     className="w-10 h-10 rounded mr-3 object-cover flex-shrink-0"
                                   />
                                   <div className="min-w-0 max-w-[135px] sm:max-w-[200px] lg:max-w-xs">

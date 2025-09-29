@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MiniPlayerControls } from '@/components/player-controls';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { ChevronUp, Heart, MoreHorizontal } from 'lucide-react';
 import { getOptimizedImageUrl } from '@/lib/image-utils';
 
@@ -102,10 +103,12 @@ export function BottomPlayer() {
             >
               {/* 封面 */}
               <div className="relative w-12 h-12 lg:w-14 lg:h-14 rounded-lg overflow-hidden bg-muted shrink-0">
-                {currentSong.coverUrl ? (
-                  <img
-                    src={getOptimizedImageUrl(currentSong.coverUrl, 'ICON_MEDIUM')}
+                {currentSong.coverUrl || currentSong.imageBlobUrl ? (
+                  <Image
+                    src={currentSong.imageBlobUrl || getOptimizedImageUrl(currentSong.coverUrl, 'ICON_MEDIUM')}
                     alt={currentSong.title}
+                    width={56}
+                    height={56}
                     className="w-full h-full object-cover lg:hidden"
                   />
                 ) : (
@@ -113,10 +116,12 @@ export function BottomPlayer() {
                     <span className="text-xs text-muted-foreground">♪</span>
                   </div>
                 )}
-                {currentSong.coverUrl ? (
-                  <img
-                    src={getOptimizedImageUrl(currentSong.coverUrl, 'ICON_LARGE')}
+                {currentSong.coverUrl || currentSong.imageBlobUrl ? (
+                  <Image
+                    src={currentSong.imageBlobUrl || getOptimizedImageUrl(currentSong.coverUrl, 'ICON_LARGE')}
                     alt={currentSong.title}
+                    width={56}
+                    height={56}
                     className="w-full h-full object-cover hidden lg:block"
                   />
                 ) : (

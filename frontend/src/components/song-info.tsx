@@ -117,7 +117,7 @@ export function AlbumCover({ song, className, size = 'lg' }: AlbumCoverProps) {
         sizeClasses[size]
       )}>
         <AvatarImage 
-          src={getOptimizedImageUrl(song.coverUrl, 'PLAYER_COVER')} 
+          src={song.imageBlobUrl || getOptimizedImageUrl(song.coverUrl, 'PLAYER_COVER')} 
           alt={`${song.title} - ${getAllArtistNames(song)}`}
           className="object-cover"
         />

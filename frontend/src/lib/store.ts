@@ -3,7 +3,8 @@ import { devtools } from 'zustand/middleware';
 import type { Song, PlayerState, Playlist } from '@/types';
 import { DEFAULT_SONG } from './default-song';
 import { PlaylistManager, PlaylistState } from './playlist-manager';
-import { useSongsStore } from './data-stores';  // 导入数据存储以记录播放量
+import { useSongsStore } from './data-stores';
+import { api } from './api';
 
 interface PlayerStore extends PlayerState {
   // Additional state
@@ -75,26 +76,60 @@ export const usePlayerStore = create<PlayerStore>()(
       shouldSeek: null,
 
       // Actions
-      setSong: (song) => {
+      setSong: async (song) => {
         const { currentSong, duration } = get();
-        // 如果是同一首歌，保持原有的时长
         const isSameSong = currentSong && currentSong.id === song.id;
-        
-        set({ 
-          currentSong: song, 
-          currentTime: 0, 
-          duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
-          playbackMode: 'song',
-          currentPlaylist: null,
-          currentMood: null
-        });
+
+        set({ isLoading: true });
+        try {
+          const result = await api.getSongWithCache(song.id);
+          if (result.success && result.data) {
+            const { audioBlob, imageBlob, ...songData } = result.data;
+            let imageBlobUrl: string | undefined;
+            if (imageBlob) {
+              imageBlobUrl = URL.createObjectURL(imageBlob);
+            }
+            const songWithCache = { ...songData, lyrics: songData.lyrics || song.lyrics, imageBlobUrl };
+            set({
+              currentSong: songWithCache,
+              currentTime: 0,
+              duration: isSameSong ? duration : 0,
+              playbackMode: 'song',
+              currentPlaylist: null,
+              currentMood: null,
+              isLoading: false,
+              isPlaying: true, // Auto-play after loading new song
+            });
+          } else {
+            set({ 
+              currentSong: song, 
+              currentTime: 0, 
+              duration: isSameSong ? duration : 0, 
+              playbackMode: 'song',
+              currentPlaylist: null,
+              currentMood: null,
+              isLoading: false,
+              error: result.error || 'Failed to load song with cache',
+            });
+          }
+        } catch (err) {
+          set({ 
+            currentSong: song, 
+            currentTime: 0, 
+            duration: isSameSong ? duration : 0, 
+            playbackMode: 'song',
+            currentPlaylist: null,
+            currentMood: null,
+            isLoading: false,
+            error: err instanceof Error ? err.message : 'Unknown error',
+          });
+        }
       },
 
       setPlaylist: (songs, currentIndex = 0) => {
         const { currentSong, duration } = get();
         const validIndex = Math.max(0, Math.min(currentIndex, songs.length - 1));
         const newSong = songs[validIndex] || null;
-        // 如果是同一首歌，保持原有的时长
         const isSameSong = currentSong && newSong && currentSong.id === newSong.id;
         
         set({
@@ -102,11 +137,10 @@ export const usePlayerStore = create<PlayerStore>()(
           currentIndex: validIndex,
           currentSong: newSong,
           currentTime: 0,
-          duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
+          duration: isSameSong ? duration : 0, 
           playbackMode: 'playlist',
         });
         
-        // 同步更新 PlaylistManager
         PlaylistManager.updatePlaylist(songs, validIndex, newSong?.id);
       },
 
@@ -114,7 +148,6 @@ export const usePlayerStore = create<PlayerStore>()(
         const { currentSong, duration } = get();
         const validIndex = Math.max(0, Math.min(currentIndex, playlist.songs.length - 1));
         const newSong = playlist.songs[validIndex] || null;
-        // 如果是同一首歌，保持原有的时长
         const isSameSong = currentSong && newSong && currentSong.id === newSong.id;
         
         set({
@@ -122,7 +155,7 @@ export const usePlayerStore = create<PlayerStore>()(
           currentIndex: validIndex,
           currentSong: newSong,
           currentTime: 0,
-          duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
+          duration: isSameSong ? duration : 0, 
           currentPlaylist: playlist,
           playbackMode: 'playlist',
           currentMood: null,
@@ -133,7 +166,6 @@ export const usePlayerStore = create<PlayerStore>()(
         const { currentSong, duration } = get();
         const validIndex = Math.max(0, Math.min(currentIndex, songs.length - 1));
         const newSong = songs[validIndex] || null;
-        // 如果是同一首歌，保持原有的时长
         const isSameSong = currentSong && newSong && currentSong.id === newSong.id;
         
         set({
@@ -141,7 +173,7 @@ export const usePlayerStore = create<PlayerStore>()(
           currentIndex: validIndex,
           currentSong: newSong,
           currentTime: 0,
-          duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
+          duration: isSameSong ? duration : 0, 
           playbackMode: 'mood',
           currentMood: mood,
           currentPlaylist: null,
@@ -161,24 +193,20 @@ export const usePlayerStore = create<PlayerStore>()(
         const nextSong = PlaylistManager.getNextSong(shuffleMode, repeatMode);
         
         if (nextSong) {
-          // 获取更新后的播放列表状态
           const updatedPlaylist = PlaylistManager.getCurrentPlaylist();
-          // 如果是同一首歌，保持原有的时长
           const isSameSong = currentSong && currentSong.id === nextSong.id;
           
           set({
             currentSong: nextSong,
-            currentTime: 0, // 重置播放时间
-            duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
-            isPlaying: true, // 确保继续播放
-            // 同步播放列表状态
+            currentTime: 0, 
+            duration: isSameSong ? duration : 0, 
+            isPlaying: true, 
             ...(updatedPlaylist && {
               playlist: updatedPlaylist.songs,
               currentIndex: updatedPlaylist.currentIndex
             })
           });
         } else {
-          // 没有下一首歌时，停止播放
           console.log('Playlist ended, stopping playback');
           set({ isPlaying: false });
         }
@@ -189,17 +217,14 @@ export const usePlayerStore = create<PlayerStore>()(
         const prevSong = PlaylistManager.getPreviousSong();
         
         if (prevSong) {
-          // 获取更新后的播放列表状态
           const updatedPlaylist = PlaylistManager.getCurrentPlaylist();
-          // 如果是同一首歌，保持原有的时长
           const isSameSong = currentSong && currentSong.id === prevSong.id;
           
           set({
             currentSong: prevSong,
             currentTime: 0,
-            duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
-            isPlaying: true, // 确保新歌曲开始播放
-            // 同步播放列表状态
+            duration: isSameSong ? duration : 0, 
+            isPlaying: true, 
             ...(updatedPlaylist && {
               playlist: updatedPlaylist.songs,
               currentIndex: updatedPlaylist.currentIndex
@@ -240,25 +265,18 @@ export const usePlayerStore = create<PlayerStore>()(
       },
 
       playFromPlaylist: async (playlistId, songIndex = 0) => {
-        // In real app, fetch playlist from API
-        // For now, mock implementation
         console.log(`Playing from playlist: ${playlistId}, song index: ${songIndex}`);
       },
 
       playFromMood: async (mood) => {
-        // In real app, fetch mood-based songs from API
-        // For now, mock implementation
         console.log(`Playing mood: ${mood}`);
       },
 
-      // Enhanced playlist management
       addToPlaylist: (song) => {
         const { playlist } = get();
-        // 允许重复添加歌曲到播放列表
         const newPlaylist = [...playlist, song];
         set({ playlist: newPlaylist });
         
-        // 同步到 PlaylistManager
         const currentPlaylist = PlaylistManager.getCurrentPlaylist();
         if (currentPlaylist) {
           PlaylistManager.updatePlaylist(newPlaylist, currentPlaylist.currentIndex);
@@ -269,7 +287,6 @@ export const usePlayerStore = create<PlayerStore>()(
         const { playlist, currentIndex } = get();
         const newPlaylist = playlist.filter(s => s.id !== songId);
         
-        // Adjust currentIndex if necessary
         let newCurrentIndex = currentIndex;
         if (currentIndex >= newPlaylist.length) {
           newCurrentIndex = Math.max(0, newPlaylist.length - 1);
@@ -281,7 +298,6 @@ export const usePlayerStore = create<PlayerStore>()(
           currentSong: newPlaylist[newCurrentIndex] || null 
         });
         
-        // 同步到 PlaylistManager
         PlaylistManager.updatePlaylist(newPlaylist, newCurrentIndex);
       },
 
@@ -316,7 +332,6 @@ export const usePlayerStore = create<PlayerStore>()(
         const [movedSong] = newPlaylist.splice(fromIndex, 1);
         newPlaylist.splice(toIndex, 0, movedSong);
         
-        // Adjust currentIndex
         let newCurrentIndex = currentIndex;
         if (fromIndex === currentIndex) {
           newCurrentIndex = toIndex;
@@ -332,7 +347,6 @@ export const usePlayerStore = create<PlayerStore>()(
           currentSong: newPlaylist[newCurrentIndex]
         });
         
-        // 同步到 PlaylistManager
         PlaylistManager.updatePlaylist(newPlaylist, newCurrentIndex);
       },
 
@@ -340,7 +354,7 @@ export const usePlayerStore = create<PlayerStore>()(
         set({
           currentSong: DEFAULT_SONG,
           currentTime: 0,
-          duration: 0, // 让音频文件加载后自动设置真实时长
+          duration: 0, 
           isPlaying: false,
           playbackMode: 'song',
           currentPlaylist: null,
@@ -348,16 +362,13 @@ export const usePlayerStore = create<PlayerStore>()(
         });
       },
 
-      // New playlist manager integration methods
       initializePlaylist: async () => {
         set({ isLoading: true });
         
         try {
-          // First try to load from localStorage
           const existingPlaylist = PlaylistManager.getCurrentPlaylist();
           
           if (existingPlaylist && existingPlaylist.songs.length > 0) {
-            // Load existing playlist
             set({
               playlist: existingPlaylist.songs,
               currentIndex: existingPlaylist.currentIndex,
@@ -366,7 +377,6 @@ export const usePlayerStore = create<PlayerStore>()(
               isLoading: false,
             });
           } else {
-            // Initialize with recommended playlist for new users
             const defaultPlaylist = await PlaylistManager.initializeDefaultPlaylist();
             
             if (defaultPlaylist) {
@@ -378,7 +388,6 @@ export const usePlayerStore = create<PlayerStore>()(
                 isLoading: false,
               });
             } else {
-              // Fallback to default song if no recommendations available
               set({
                 currentSong: DEFAULT_SONG,
                 currentTime: 0,
@@ -422,7 +431,6 @@ export const usePlayerStore = create<PlayerStore>()(
         
         if (song) {
           const storedPlaylist = PlaylistManager.getCurrentPlaylist();
-          // 如果是同一首歌，保持原有的时长
           const isSameSong = currentSong && currentSong.id === song.id;
           
           if (storedPlaylist) {
@@ -431,7 +439,7 @@ export const usePlayerStore = create<PlayerStore>()(
               currentIndex: storedPlaylist.currentIndex,
               currentSong: song,
               currentTime: 0,
-              duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
+              duration: isSameSong ? duration : 0, 
             });
           }
         }
@@ -441,7 +449,6 @@ export const usePlayerStore = create<PlayerStore>()(
         const { currentSong, duration } = get();
         const validIndex = Math.max(0, Math.min(songIndex, songs.length - 1));
         const newSong = songs[validIndex] || null;
-        // 如果是同一首歌，保持原有的时长
         const isSameSong = currentSong && newSong && currentSong.id === newSong.id;
         const playlistState = PlaylistManager.updatePlaylist(songs, validIndex);
         
@@ -450,9 +457,9 @@ export const usePlayerStore = create<PlayerStore>()(
           currentIndex: validIndex,
           currentSong: newSong,
           currentTime: 0,
-          duration: isSameSong ? duration : 0, // 同一首歌保持时长，新歌曲重置为0等待加载
+          duration: isSameSong ? duration : 0, 
           playbackMode: 'playlist',
-          isPlaying: true, // Auto-play when replacing playlist
+          isPlaying: true, 
         });
       },
     }),

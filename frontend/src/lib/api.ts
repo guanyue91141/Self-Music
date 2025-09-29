@@ -11,6 +11,7 @@ import type {
 } from '@/types';
 import { mockApi } from './mock-api';
 import { API_BASE_URL } from './base_url_config';
+import { getSongFromCache, saveSongToCache, getLyricsFromCache, saveLyricsToCache } from './indexeddb-cache';
 
 const USE_MOCK_API = false;
 
@@ -52,6 +53,111 @@ class RealApiClient {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
+    }
+  }
+
+  async getSongWithCache(id: string): Promise<ApiResponse<Song & { audioBlob?: Blob; imageBlob?: Blob | null; }>> {
+    // 1. Try to get from IndexedDB cache
+    const cached = await getSongFromCache(id);
+    if (cached) {
+      // If audioBlob is cached, check for imageBlob
+      if (cached.imageBlob) {
+        return { success: true, data: { ...cached.song, audioBlob: cached.audioBlob, imageBlob: cached.imageBlob } };
+      } else if (cached.song.coverUrl) {
+        // If imageBlob is missing but coverUrl exists, fetch and cache image
+        try {
+          const imageUrl = cached.song.coverUrl.startsWith('http') ? cached.song.coverUrl : `${this.baseURL}${cached.song.coverUrl}`;
+          console.log('Attempting to fetch missing image from:', imageUrl);
+          const imageResponse = await fetch(imageUrl);
+          console.log('Missing image fetch response OK:', imageResponse.ok, 'Status:', imageResponse.status);
+          if (imageResponse.ok) {
+            const imageBlob = await imageResponse.blob();
+            console.log('Missing Image Blob created, size:', imageBlob.size);
+            await saveSongToCache(cached.song, cached.audioBlob, imageBlob); // Update existing cache entry
+            return { success: true, data: { ...cached.song, audioBlob: cached.audioBlob, imageBlob } };
+          }
+        } catch (imgError) {
+          console.warn('Failed to fetch missing image for caching:', imgError);
+        }
+      }
+      // If imageBlob is still missing or fetch failed, return cached audio only
+      return { success: true, data: { ...cached.song, audioBlob: cached.audioBlob, imageBlob: null } };
+    }
+
+    // 2. If not in cache, fetch from network
+    try {
+      // Fetch song metadata
+      const songMetaResponse = await this.request<Song>(`/songs/${id}`);
+      if (!songMetaResponse.success || !songMetaResponse.data) {
+        return { success: false, error: songMetaResponse.error || 'Failed to fetch song metadata' };
+      }
+      let song = songMetaResponse.data;
+
+      // Fetch audio as Blob
+      const audioResponse = await fetch(`${this.baseURL}/songs/${id}/stream`);
+      if (!audioResponse.ok) {
+        throw new Error(`HTTP error fetching audio! status: ${audioResponse.status}`);
+      }
+      const audioBlob = await audioResponse.blob();
+
+      // Fetch image as Blob
+      let imageBlob: Blob | null = null;
+      if (song.coverUrl) {
+        try {
+          const imageUrl = song.coverUrl.startsWith('http') ? song.coverUrl : `${this.baseURL}${song.coverUrl}`;
+          console.log('Attempting to fetch image from:', imageUrl);
+          const imageResponse = await fetch(imageUrl);
+          console.log('Image fetch response OK:', imageResponse.ok, 'Status:', imageResponse.status);
+          if (imageResponse.ok) {
+            imageBlob = await imageResponse.blob();
+            console.log('Image Blob created, type:', imageBlob.type, 'size:', imageBlob.size);
+          }
+        } catch (imgError) {
+          console.warn('Failed to fetch image for caching:', imgError);
+        }
+      }
+
+      // Fetch lyrics
+      const lyricsResponse = await fetch(`${this.baseURL}/songs/${id}/lyrics`);
+      let lyricsText = '';
+      if (lyricsResponse.ok) {
+        lyricsText = await lyricsResponse.text();
+        song = { ...song, lyrics: lyricsText }; // Add lyrics to song object
+      }
+
+      // Save to cache
+      console.log('Calling saveSongToCache with imageBlob (exists):', !!imageBlob, 'size:', imageBlob?.size);
+      await saveSongToCache(song, audioBlob, imageBlob);
+      if (lyricsText) {
+        await saveLyricsToCache(id, lyricsText);
+      }
+
+      return { success: true, data: { ...song, audioBlob, imageBlob } };
+    } catch (error) {
+      console.error('Error in getSongWithCache:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  async getLyrics(songId: string): Promise<ApiResponse<string>> {
+    // 1. Try to get from IndexedDB cache
+    const cachedLyrics = await getLyricsFromCache(songId);
+    if (cachedLyrics) {
+      return { success: true, data: cachedLyrics };
+    }
+
+    // 2. If not in cache, fetch from network
+    try {
+      const response = await fetch(`${this.baseURL}/songs/${songId}/lyrics`);
+      if (!response.ok) {
+        throw new Error(`HTTP error fetching lyrics! status: ${response.status}`);
+      }
+      const lyricsText = await response.text();
+      await saveLyricsToCache(songId, lyricsText);
+      return { success: true, data: lyricsText };
+    } catch (error) {
+      console.error('Error in getLyrics:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -188,6 +294,8 @@ const realApi = new RealApiClient(API_BASE_URL);
 // Export the appropriate API based on environment
 export const api = USE_MOCK_API ? mockApi : realApi;
 
+export { API_BASE_URL };
+
 // Export individual API functions for convenience
 export const {
   getArtists,
@@ -199,6 +307,7 @@ export const {
   getAlbumSongs,
   getSongs,
   getSong,
+  getSongWithCache,
   getPlaylists,
   getPlaylist,
   createPlaylist,
@@ -209,6 +318,7 @@ export const {
   getMoods,
   getMood,
   getMoodSongs,
+  getLyrics,
   search,
   getRecommendations,
   getSimilarSongs,

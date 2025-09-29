@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 import { 
   Plus, 
   Edit, 
@@ -91,7 +92,13 @@ function SortableSongItem({ song, onRemove }: { song: Song; onRemove: () => void
       </div>
       <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
         {song.coverUrl ? (
-          <img src={song.coverUrl} alt={song.title} className="w-full h-full rounded-lg object-cover" />
+          <Image 
+            src={song.coverUrl} 
+            alt={song.title} 
+            width={32} 
+            height={32} 
+            className="w-full h-full rounded-lg object-cover" 
+          />
         ) : (
           <Music className="h-4 w-4 text-muted-foreground" />
         )}
@@ -380,7 +387,13 @@ export default function PlaylistsPage() {
                         />
                         <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
                           {song.coverUrl ? (
-                            <img src={song.coverUrl} alt={song.title} className="w-full h-full rounded-lg object-cover" />
+                            <Image 
+                              src={song.coverUrl} 
+                              alt={song.title} 
+                              width={40} 
+                              height={40} 
+                              className="w-full h-full rounded-lg object-cover" 
+                            />
                           ) : (
                             <Music className="h-5 w-5 text-muted-foreground" />
                           )}
@@ -484,7 +497,13 @@ export default function PlaylistsPage() {
                       <div className="flex items-center space-x-4">
                         <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
                           {playlist.coverUrl ? (
-                            <img src={playlist.coverUrl} alt={playlist.name} className="w-full h-full rounded-lg object-cover" />
+                            <Image 
+                              src={playlist.coverUrl} 
+                              alt={playlist.name} 
+                              width={64} 
+                              height={64} 
+                              className="w-full h-full rounded-lg object-cover" 
+                            />
                           ) : (
                             <List className="h-8 w-8 text-muted-foreground" />
                           )}

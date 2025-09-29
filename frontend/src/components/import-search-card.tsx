@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Image from 'next/image';
 import { 
   Music, 
   User, 
@@ -466,9 +467,11 @@ export function ImportSearchCard({ item, onUpdate, onResearch }: ImportSearchCar
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                         {result.img ? (
-                          <img 
+                          <Image 
                             src={result.img} 
                             alt={result.name}
+                            width={48}
+                            height={48}
                             className="w-full h-full rounded-lg object-cover"
                           />
                         ) : (

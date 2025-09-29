@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 import { 
   Music, 
   User, 
@@ -92,9 +93,11 @@ export function MusicInfoDisplay({ detailedInfo }: MusicInfoDisplayProps) {
               <div className="flex items-start gap-4">
                 <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                   {song.img ? (
-                    <img 
+                    <Image 
                       src={song.img} 
                       alt={song.name}
+                      width={80}
+                      height={80}
                       className="w-full h-full rounded-lg object-cover"
                     />
                   ) : (
@@ -144,9 +147,11 @@ export function MusicInfoDisplay({ detailedInfo }: MusicInfoDisplayProps) {
               <div className="flex items-start gap-4">
                 <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                   {album.coverUrl ? (
-                    <img 
+                    <Image 
                       src={getOptimizedImageUrl(album.coverUrl, 'CARD_MEDIUM')} 
                       alt={album.title}
+                      width={96}
+                      height={96}
                       className="w-full h-full rounded-lg object-cover"
                     />
                   ) : (
@@ -220,9 +225,11 @@ export function MusicInfoDisplay({ detailedInfo }: MusicInfoDisplayProps) {
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
                         {artist.avatarUrl ? (
-                          <img 
+                          <Image 
                             src={artist.avatarUrl} 
                             alt={artist.name}
+                            width={48}
+                            height={48}
                             className="w-full h-full rounded-full object-cover"
                           />
                         ) : (

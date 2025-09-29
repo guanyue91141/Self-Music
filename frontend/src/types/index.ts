@@ -44,6 +44,8 @@ export interface Song {
   audioUrl?: string;
   coverUrl?: string;
   lyrics?: string;
+  imageBlob?: Blob | null;
+  imageBlobUrl?: string;
   moods: Mood[];
   moodIds: string[];
   playCount: number;

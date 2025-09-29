@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MultiArtistSelector } from '@/components/multi-artist-selector';
 import { ArtistBadge } from '@/components/artist-badge';
+import Image from 'next/image';
 import { 
   Plus, 
   Edit, 
@@ -519,7 +520,13 @@ export default function SongsPage() {
                       <div className="flex items-center space-x-4">
                         <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
                           {song.coverUrl ? (
-                            <img src={song.coverUrl} alt={song.title} className="w-full h-full rounded-lg object-cover" />
+                            <Image 
+                              src={song.coverUrl} 
+                              alt={song.title} 
+                              width={64} 
+                              height={64} 
+                              className="w-full h-full rounded-lg object-cover" 
+                            />
                           ) : (
                             <Music className="h-8 w-8 text-muted-foreground" />
                           )}

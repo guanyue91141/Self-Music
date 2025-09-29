@@ -185,6 +185,26 @@ class MockApiClient {
     };
   }
 
+  async getSongWithCache(id: string): Promise<ApiResponse<Song & { audioBlob?: Blob; }>> {
+    await mockDelay();
+    const song = mockSongs.find(s => s.id === id);
+    if (!song) {
+      return { success: false, error: 'Song not found' };
+    }
+    // For mock, we don't have actual audio blobs, so we just return the song metadata
+    // and a placeholder audioUrl if needed.
+    return { success: true, data: { ...song, audioBlob: new Blob([], { type: 'audio/mpeg' }) } };
+  }
+
+  async getLyrics(songId: string): Promise<ApiResponse<string>> {
+    await mockDelay();
+    const song = mockSongs.find(s => s.id === songId);
+    if (!song || !song.lyrics) {
+      return { success: false, error: 'Lyrics not found' };
+    }
+    return { success: true, data: song.lyrics };
+  }
+
   // Playlists API
   async getPlaylists(page = 1, limit = 20): Promise<ApiResponse<PaginatedResponse<Playlist>>> {
     await mockDelay();
@@ -558,6 +578,7 @@ export const {
   getAlbumSongs: mockGetAlbumSongs,
   getSongs: mockGetSongs,
   getSong: mockGetSong,
+  getSongWithCache: mockGetSongWithCache,
   getPlaylists: mockGetPlaylists,
   getPlaylist: mockGetPlaylist,
   createPlaylist: mockCreatePlaylist,
@@ -568,6 +589,7 @@ export const {
   getMoods: mockGetMoods,
   getMood: mockGetMood,
   getMoodSongs: mockGetMoodSongs,
+  getLyrics: mockGetLyrics,
   search: mockSearch,
   getRecommendations: mockGetRecommendations,
   getSimilarSongs: mockGetSimilarSongs,

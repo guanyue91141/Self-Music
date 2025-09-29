@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { 
   ListMusic, 
   Trash2, 
@@ -243,9 +244,11 @@ export function PlaylistPanel({ className }: PlaylistPanelProps) {
                           {/* Cover */}
                           <div className="relative h-12 w-12 flex-shrink-0 mr-3">
                             {song.coverUrl ? (
-                              <img
+                              <Image
                                 src={getOptimizedImageUrl(song.coverUrl, 'ICON_MEDIUM')}
                                 alt={song.title}
+                                width={48}
+                                height={48}
                                 className="h-full w-full object-cover rounded-md"
                               />
                             ) : (
