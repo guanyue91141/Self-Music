@@ -12,6 +12,31 @@ const nextConfig: NextConfig = {
     'xg.guanyue.fun',
     'music.guanyue.fun'
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'p1.music.126.net', // 网易云音乐图片域名
+      },
+      {
+        protocol: 'https',
+        hostname: 'p2.music.126.net', // 网易云音乐图片域名
+      },
+      {
+        protocol: 'https',
+        hostname: 'p3.music.126.net', // 网易云音乐图片域名
+      },
+      {
+        protocol: 'https',
+        hostname: 'p4.music.126.net', // 网易云音乐图片域名
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com', // 示例图片域名
+      },
+      // 添加更多允许的图片域名
+    ],
+  },
   // 开发模式配置
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

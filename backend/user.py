@@ -773,6 +773,21 @@ async def get_similar_songs(song_id: str, limit: int = Query(10, ge=1, le=50)):
     conn.close()
     return songs
 
+@router.get("/api/songs/{song_id}/lyrics")
+async def get_song_lyrics(song_id: str):
+    conn = sqlite3.connect('music.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT lyrics FROM songs WHERE id = ?', (song_id,))
+    row = cursor.fetchone()
+    
+    conn.close()
+    
+    if not row or not row[0]:
+        raise HTTPException(status_code=404, detail="Lyrics not found")
+    
+    return {"success": True, "data": row[0]}
+
 # Playlists API
 @router.get("/api/playlists")
 async def get_playlists(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100)):
